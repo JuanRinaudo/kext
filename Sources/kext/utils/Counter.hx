@@ -2,28 +2,40 @@ package kext.utils;
 
 class Counter {
 
-	public var cicleValue:Float = 0; 
-	public var tickValue:Float = 0;
+	public var targetValue:Float = 0; 
+	public var tickDelta:Float = 0;
 	public var currentValue:Float = 0;
-	public var cicleCallback:Void -> Void;
+	public var callback:Void -> Void;
+	public var loop:Bool;
+	public var running:Bool;
 
-	public function new(value:Float, tick:Float, callback:Void->Void, startValue:Float = 0) {
-		cicleValue = value;
-		tickValue = tick;
+	public function new(toValue:Float, tickValue:Float, endCallback:Void->Void, doLoop:Bool = false, startValue:Float = 0) {
+		targetValue = toValue;
+		tickDelta = tickValue;
 		currentValue = startValue;
-		cicleCallback = callback;
+		callback = endCallback;
+		loop = doLoop;
+		running = true;
 	}
 
 	public function tick() {
-		currentValue += tickValue;
-		if(currentValue > cicleValue) {
-			currentValue -= cicleValue;
-			cicleCallback();
-		} 
+		if(running) {
+			currentValue += tickDelta;
+			if(currentValue > targetValue) {
+				if(loop) { currentValue -= targetValue; }
+				else { running = false; }
+				callback();
+			}
+		}
 	}
 
-	public function restart() {
-		currentValue = 0;
+	public function done() {
+		return running == false;
+	}
+
+	public function restart(startValue:Float = 0) {
+		currentValue = startValue;
+		running = true;
 	}
 
 }

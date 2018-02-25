@@ -23,6 +23,8 @@ import kext.events.ApplicationStartEvent;
 import kext.events.ApplicationEndEvent;
 import kext.events.LoadCompleteEvent;
 
+import kext.utils.Counter;
+
 import kha.graphics4.PipelineState;
 import kha.graphics4.ConstantLocation;
 import kha.graphics4.TextureUnit;
@@ -58,6 +60,9 @@ class Application {
 	private var loaderProgress:Float;
 	private var loaderUpdateID:Int;
 
+	public static var width:Float = 0;
+	public static var height:Float = 0;
+
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
 	public static var mouse:MouseInput;
@@ -78,10 +83,14 @@ class Application {
 	private static var postProcessingPipelines:Map<FragmentShader, BasicPipeline>;
 	private static var postProcessingUniforms:Map<FragmentShader, Map<String, PostProcessingUniform>>;
 
+	private static var updateCounters:Array<Counter> = [];
+
 	private var debug:Debug;
 
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
 		sysOptions = systemOptions;
+		width = systemOptions.width;
+		height = systemOptions.height;
 		options = defaultApplicationOptions(applicationOptions);
 		
 		deltaTime = options.updatePeriod;
@@ -223,6 +232,10 @@ class Application {
 	}
 
 	private function updatePass() {
+		for(counter in updateCounters) {
+			counter.tick();
+		}
+
 		if(currentState != null) {
 			time += options.updatePeriod;
 			currentState.update(options.updatePeriod);
@@ -241,10 +254,12 @@ class Application {
 	}
 
 	public static function setPostProcessingShader(shader:FragmentShader) {
+		#if !kha_krom //TODO: Check why this breaks on krom
 		var pipeline:BasicPipeline = new BasicPipeline(Shaders.painter_image_vert, shader);
 		pipeline.compile();
 		postProcessingPipelines.set(shader, pipeline);
 		postProcessingUniforms.set(shader, new Map());
+		#end
 	}
 
 	public static function removePostProcessingShader(shader:FragmentShader) {
@@ -265,6 +280,14 @@ class Application {
 		if(pipeline == null) { trace('No pipeline found for the current post processing uniform: $name'); return; }
 		var uniforms:Map<String, PostProcessingUniform> = postProcessingUniforms.get(shader);
 		uniforms.set(name, {type: type, textureUnit: pipeline.getTextureUnit(name), value: value});
+	}
+
+	public static function addCounterUpdate(counter:Counter) {
+		updateCounters.push(counter);
+	}
+
+	public static function removeCounterUpdate(counter:Counter) {
+		updateCounters.remove(counter);
 	}
 
 }
