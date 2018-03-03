@@ -4,6 +4,7 @@ import kext.g4basics.BasicMesh;
 import kext.g4basics.BasicPipeline;
 import kext.loaders.OBJMeshLoader;
 import kext.math.BoundingCube;
+import kext.math.BoundingRect;
 
 import kha.Assets;
 import kha.Color;
@@ -42,8 +43,8 @@ class Debug extends Basic {
 	}
 
 	private function loadCompleteHandler() {
-		cube = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(1, 1, 1, 1));
-		cubeBound = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(0, 0.7, 0, 0.25));
+		// cube = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(1, 1, 1, 1));
+		// cubeBound = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(0, 0.7, 0, 0.25));
 	}
 
 	public static function drawDebugBoundingCube(backbuffer:Image, fromPipeline:BasicPipeline, boundingCube:BoundingCube) {
@@ -80,6 +81,15 @@ class Debug extends Basic {
 		var mvpMatrix:FastMatrix4 = projectionViewMatrix.multmat(modelMatrix);
 		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, mvpMatrix);
 		backbuffer.g4.drawIndexedVertices();
+	}
+
+	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color) {
+		backbuffer.g2.color = color;
+		backbuffer.g2.transformation._00 = 1;
+		backbuffer.g2.transformation._11 = 1;
+		backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;
+		backbuffer.g2.transformation._21 = bounds.position.y - bounds.offset.y;
+		backbuffer.g2.drawRect(0, 0, bounds.size.x, bounds.size.y);
 	}
 
 }

@@ -1,10 +1,15 @@
 package kext.g2basics;
 
+import kext.Application;
+
 import kha.Color;
 import kha.Image;
 
 import kha.math.Vector2;
 import kha.math.FastMatrix3;
+
+import kext.math.Rectangle;
+import kext.math.BoundingRect;
 
 class BasicSprite {
 
@@ -13,26 +18,32 @@ class BasicSprite {
 	public var rotation:Float;
 
 	public var origin:Vector2;
+	public var bounds:BoundingRect;
+
 	public var box:Vector2;
 
 	public var transform:FastMatrix3;
+	public var image:Image;
+	public var subimage:Rectangle;
 
 	public var color:Color;
 
-	public var drawFunction:(Image) -> Void;
-
-	public function new(x:Float, y:Float) {
+	public function new(x:Float, y:Float, spriteImage:Image) {
 		position = new Vector2(x, y);
 		scale = new Vector2(1, 1);
 		rotation = 0;
 
-		origin = new Vector2(0, 0);
-		box = new Vector2(0, 0);
-
 		transform = FastMatrix3.identity();
-		color = Color.White;
+		image = spriteImage;
+		subimage = null;
 
-		setDrawRectangle(32, 32);
+		origin = new Vector2(0, 0);
+		box = new Vector2(image.width, image.height);
+
+		color = Color.White;
+		centerOrigin();
+
+		bounds = BoundingRect.fromSprite(this);
 	}
 
 	public function draw(backbuffer:Image) {
@@ -44,32 +55,28 @@ class BasicSprite {
 		transform._21 = position.y - origin.y * scale.y;
 
 		backbuffer.g2.transformation = transform;
-		drawFunction(backbuffer);
+		if(subimage != null) {
+			backbuffer.g2.drawSubImage(image, 0, 0, subimage.x, subimage.y, subimage.width, subimage.height);
+		} else {
+			backbuffer.g2.drawImage(image, 0, 0);
+		}
+	}
+
+	public inline function setSubimage(x:Float, y:Float, width:Float, height:Float) {
+		subimage = new Rectangle(x, y, width, height);
+	}
+
+	public inline function mousePressed():Bool {
+		return Application.mouse.buttonPressed(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
+	}
+
+	public inline function mouseDown():Bool {
+		return Application.mouse.buttonDown(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
 	}
 
 	public function centerOrigin() {
-		origin.x = box.x * 0.5;
-		origin.y = box.y * 0.5;
-	}
-
-	private function drawImage(backbuffer:Image, image:Image) {
-		backbuffer.g2.drawImage(image, 0, 0);
-	}
-
-	private function drawRectangle(backbuffer:Image, width:Float, height:Float) {
-		backbuffer.g2.fillRect(0, 0, width, height);
-	}
-
-	public function setDrawRectangle(width:Float, height:Float) {
-		drawFunction = drawRectangle.bind(_, width, height);
-		box.x = width;
-		box.y = height;
-	}
-
-	public function setDrawImage(image:Image) {
-		drawFunction = drawImage.bind(_, image);
-		box.x = image.width;
-		box.y = image.height;
+		origin.x = image.width * 0.5;
+		origin.y = image.height * 0.5;
 	}
 
 }

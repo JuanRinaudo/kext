@@ -92,7 +92,7 @@ class BoundingCube {
 		return true;
 	}
 
-	public inline static function fromBasicMesh(mesh:BasicMesh):BoundingCube {
+	public static function fromBasicMesh(mesh:BasicMesh):BoundingCube {
 		var vertexes = mesh.vertexBuffer.lock();
 		var x:Float = vertexes.get(0);
 		var y:Float = vertexes.get(1);

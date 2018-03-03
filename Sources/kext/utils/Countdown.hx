@@ -6,10 +6,10 @@ class Countdown {
 	public var tickValue:Float = 0;
 	public var currentValue:Float = 0;
 
-	public function new(value:Float, tick:Float, startValue:Float = 0) {
+	public function new(value:Float, tick:Float, startValue:Float = -1) {
 		targetValue = value;
 		tickValue = tick;
-		currentValue = startValue;
+		currentValue = startValue == -1 ? value : startValue;
 	}
 
 	public inline function tick() {
@@ -18,6 +18,10 @@ class Countdown {
 
 	public inline function done():Bool {
 		return currentValue == 0; 
+	}
+
+	public inline function running():Bool {
+		return currentValue != 0;
 	}
 
 	public inline  function start() {

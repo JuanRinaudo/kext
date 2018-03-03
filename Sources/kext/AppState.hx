@@ -28,4 +28,8 @@ class AppState extends Basic {
 		ui = new Zui({font: Assets.fonts.KenPixel});
 	}
 
+	public function destroy() {
+		
+	}
+
 }

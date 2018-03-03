@@ -34,6 +34,13 @@ import kha.graphics4.DepthStencilFormat;
 
 import kext.debug.Debug;
 
+#if js
+import js.Browser;
+import js.html.Document;
+import js.html.Window;
+import js.html.Element;
+#end
+
 using kext.UniformType;
 
 typedef ApplicationOptions = {
@@ -60,6 +67,8 @@ class Application {
 	private var loaderProgress:Float;
 	private var loaderUpdateID:Int;
 
+	private static var instance:Application;
+
 	public static var width:Float = 0;
 	public static var height:Float = 0;
 
@@ -85,30 +94,58 @@ class Application {
 
 	private static var updateCounters:Array<Counter> = [];
 
+	#if js
+	private var document:Document;
+	private var window:Window;
+	private var game:Element;
+	#end
+
 	private var debug:Debug;
 
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
-		sysOptions = systemOptions;
+		sysOptions = defaultSystemOptions(systemOptions);
 		width = systemOptions.width;
 		height = systemOptions.height;
 		options = defaultApplicationOptions(applicationOptions);
 		
 		deltaTime = options.updatePeriod;
 
-		#if (js && !kha_krom) 
-		var game = js.Browser.document.getElementById("game");
-		game.style.width = systemOptions.width + "px";
-		game.style.height = systemOptions.height + "px";
+		#if (js && !kha_krom)
+		document = Browser.document;
+		window = Browser.window;
+		game = document.getElementById("game");
+		// untyped __js__("addEventListener('click', function() { //Fullscreen
+		// 	var el = document.documentElement;
+		// 	var rfs = el.requestFullscreen
+		// 		|| el.webkitRequestFullScreen
+		// 		|| el.mozRequestFullScreen
+		// 		|| el.msRequestFullscreen;
+		// 	rfs.call(el);
+		// });");
 		#end
 
 		System.init(systemOptions, onInit);
+		addResizeHandler();
+
+		if(Application.instance == null) {
+			Application.instance = this;
+		} else {
+			//TODO
+		}
 	}
 
-	private function defaultApplicationOptions(applicationOptions:ApplicationOptions) {
+	private function defaultApplicationOptions(applicationOptions:ApplicationOptions):ApplicationOptions {
 		if(applicationOptions.updateStart == null) { applicationOptions.updateStart = 0; }
 		if(applicationOptions.updatePeriod == null) { applicationOptions.updatePeriod = 1 / 60; }
 		if(applicationOptions.stateArguments == null) { applicationOptions.stateArguments = []; }
 		return applicationOptions;
+	}
+
+	private function defaultSystemOptions(systemOptions:SystemOptions):SystemOptions {
+		if(systemOptions.resizable == null) { systemOptions.resizable = true; }
+		if(systemOptions.maximizable == null) { systemOptions.maximizable = true; }
+		if(systemOptions.minimizable == null) { systemOptions.minimizable = true; }
+		return systemOptions;
 	}
 
 	private function onInit() {
@@ -119,8 +156,7 @@ class Application {
 		mouse = new MouseInput();
 		touch = new TouchInput();
 
-		backbuffer = Image.createRenderTarget(sysOptions.width, sysOptions.height, TextureFormat.RGBA32, DepthStencilFormat.DepthOnly);
-		postbackbuffer = Image.createRenderTarget(sysOptions.width, sysOptions.height, TextureFormat.RGBA32, DepthStencilFormat.DepthOnly);
+		createBuffers(sysOptions.width, sysOptions.height);
 
 		postProcessingPipelines = new Map();
 		postProcessingUniforms = new Map();
@@ -132,6 +168,11 @@ class Application {
 		Assets.loadEverything(loadCompleteHandler);
 
 		onApplicationStart.dispatch();
+	}
+
+	private function createBuffers(width:Int, height:Int) {
+		backbuffer = Image.createRenderTarget(width, height, TextureFormat.RGBA32, DepthStencilFormat.DepthOnly);
+		postbackbuffer = Image.createRenderTarget(width, height, TextureFormat.RGBA32, DepthStencilFormat.DepthOnly);
 	}
 
 	private function loadCompleteHandler() {
@@ -192,6 +233,30 @@ class Application {
 		framebuffer.g2.end();
 	}
 
+	private function addResizeHandler() {
+		#if (js && !kha_krom)
+		window.onresize = resizeHandler;
+		#end
+		resizeHandler();
+	}
+
+	private function resizeHandler() {
+		#if (js && !kha_krom)
+		var width:Int = window.innerWidth;
+		var height:Int = window.innerHeight;
+		#end
+		changeResolution(width, height);
+	}
+
+	private function changeResolution(width:Float, height:Float) {
+		#if (js && !kha_krom)
+		var document = js.Browser.document;
+		var game = document.getElementById("game");
+		game.style.width = width + "px";
+		game.style.height = height + "px";
+		#end
+	}
+
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {
 		var uniforms:Map<String, PostProcessingUniform> = postProcessingUniforms.get(pipeline.fragmentShader);
 		buffer.g4.setVector2(pipeline.getConstantLocation("RENDER_SIZE"), new FastVector2(sysOptions.width, sysOptions.height));
@@ -202,11 +267,11 @@ class Application {
 				case FLOAT:
 					buffer.g4.setFloat(uniform.location, uniform.value);
 				// case FLOAT2:
-				// 	buffer.g4.setFloat(uniform.location, uniform.value); TODO		
+				// 	buffer.g4.setFloat(uniform.location, uniform.value); //TODO		
 				// case FLOAT3:
-				// 	buffer.g4.setFloat(uniform.location, uniform.value); TODO
+				// 	buffer.g4.setFloat(uniform.location, uniform.value); //TODO
 				// case FLOAT4:
-				// 	buffer.g4.setFloat(uniform.location, uniform.value); TODO
+				// 	buffer.g4.setFloat(uniform.location, uniform.value); //TODO
 				case INT:
 					buffer.g4.setInt(uniform.location, uniform.value);
 				case MATRIX3:
@@ -288,6 +353,12 @@ class Application {
 
 	public static function removeCounterUpdate(counter:Counter) {
 		updateCounters.remove(counter);
+	}
+
+	public static function reset() {
+		var app:Application = Application.instance;
+		app.currentState.destroy();
+		app.currentState = Type.createInstance(app.options.initState, app.options.stateArguments);
 	}
 
 }
