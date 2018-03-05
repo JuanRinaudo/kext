@@ -11,6 +11,7 @@ import kha.Scaler;
 import kha.Shaders;
 import kha.Scaler.TargetRectangle;
 
+import kha.math.Vector2;
 import kha.math.FastVector2;
 
 import kext.g4basics.BasicPipeline;
@@ -354,6 +355,11 @@ class Application {
 		var uniforms:Map<String, PostProcessingUniform> = postProcessingUniforms.get(shader);
 		uniforms.set(name, {type: type, textureUnit: pipeline.getTextureUnit(name), value: value});
 	}
+
+	public static function screenToGamePosition(vector:Vector2):Vector2 {
+		return new Vector2((vector.x - Application.targetRectangle.x) / Application.targetRectangle.scaleFactor,
+			(vector.y - Application.targetRectangle.y) / Application.targetRectangle.scaleFactor);
+	} 
 
 	public static function addCounterUpdate(counter:Counter) {
 		updateCounters.push(counter);

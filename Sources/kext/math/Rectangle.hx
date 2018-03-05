@@ -1,5 +1,7 @@
 package kext.math;
 
+import kha.math.Vector2;
+
 class Rectangle
 {
 	
@@ -13,6 +15,13 @@ class Rectangle
 		this.y = y;
 		this.width = width;
 		this.height = height;
+	}
+
+	public inline function pointInside(vector:Vector2) {
+		if(vector.x < x || vector.x > x + width) { return false; }
+		if(vector.y < y || vector.y > y + height) { return false; }
+		
+		return true;
 	}
 	
 	public function toString():String {

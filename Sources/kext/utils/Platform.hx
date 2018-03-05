@@ -23,13 +23,9 @@ class Platform {
 	// 	#end
 	// }
 
-	public static function checkMobile() {
+	public static function checkMobile():Bool {
 		#if js
-		var android:Bool = Browser.navigator.userAgent.indexOf("Android") > -1;
-		var iphone:Bool = Browser.navigator.userAgent.indexOf("iPhone") > -1;
-		var ipad:Bool = Browser.navigator.userAgent.indexOf("iPad") > -1;
-		var ipod:Bool = Browser.navigator.userAgent.indexOf("iPod") > -1;
-		return android || iphone || ipad || ipod;
+		return kha.SystemImpl.mobile;
 		#end
 	}
 
