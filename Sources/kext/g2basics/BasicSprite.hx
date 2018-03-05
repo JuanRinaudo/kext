@@ -26,6 +26,9 @@ class BasicSprite {
 	public var image:Image;
 	public var subimage:Rectangle;
 
+	public var inputPressed(get, null):Bool;
+	public var inputDown(get, null):Bool;
+
 	public var color:Color;
 
 	public function new(x:Float, y:Float, spriteImage:Image) {
@@ -60,17 +63,21 @@ class BasicSprite {
 		} else {
 			backbuffer.g2.drawImage(image, 0, 0);
 		}
+
+		#if debug
+			kext.debug.Debug.drawBounds(backbuffer, bounds);
+		#end
 	}
 
 	public inline function setSubimage(x:Float, y:Float, width:Float, height:Float) {
 		subimage = new Rectangle(x, y, width, height);
 	}
 
-	public inline function mousePressed():Bool {
+	public inline function get_inputPressed():Bool {
 		return Application.mouse.buttonPressed(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
 	}
 
-	public inline function mouseDown():Bool {
+	public inline function get_inputDown():Bool {
 		return Application.mouse.buttonDown(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
 	}
 

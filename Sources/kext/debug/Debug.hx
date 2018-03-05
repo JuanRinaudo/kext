@@ -22,6 +22,8 @@ class Debug extends Basic {
 	private static var cube:BasicMesh;
 	private static var cubeBound:BasicMesh;
 
+	public static var boundsColor:Color = Color.Green;
+
 	public function new() {
 		super();
 
@@ -83,8 +85,8 @@ class Debug extends Basic {
 		backbuffer.g4.drawIndexedVertices();
 	}
 
-	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color) {
-		backbuffer.g2.color = color;
+	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color = null) {
+		backbuffer.g2.color = color != null ? color : boundsColor;
 		backbuffer.g2.transformation._00 = 1;
 		backbuffer.g2.transformation._11 = 1;
 		backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;

@@ -9,6 +9,7 @@ import kha.Scheduler;
 import kha.System.SystemOptions;
 import kha.Scaler;
 import kha.Shaders;
+import kha.Scaler.TargetRectangle;
 
 import kha.math.FastVector2;
 
@@ -24,6 +25,7 @@ import kext.events.ApplicationEndEvent;
 import kext.events.LoadCompleteEvent;
 
 import kext.utils.Counter;
+import kext.utils.Platform;
 
 import kha.graphics4.PipelineState;
 import kha.graphics4.ConstantLocation;
@@ -71,6 +73,7 @@ class Application {
 
 	public static var width:Float = 0;
 	public static var height:Float = 0;
+	public static var targetRectangle:TargetRectangle;
 
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
@@ -79,6 +82,8 @@ class Application {
 
 	public static var backbuffer:Image;
 	public static var postbackbuffer:Image;
+
+	public static var platform:Platform;
 
 	public static var onApplicationStart:Signal<ApplicationStartEvent> = new Signal();
 	public static var onApplicationEnd:Signal<ApplicationEndEvent> = new Signal();
@@ -155,6 +160,8 @@ class Application {
 		keyboard = new KeyboardInput();
 		mouse = new MouseInput();
 		touch = new TouchInput();
+
+		platform = new Platform();
 
 		createBuffers(sysOptions.width, sysOptions.height);
 
@@ -248,13 +255,14 @@ class Application {
 		changeResolution(width, height);
 	}
 
-	private function changeResolution(width:Float, height:Float) {
+	private function changeResolution(width:Int, height:Int) {
 		#if (js && !kha_krom)
 		var document = js.Browser.document;
 		var game = document.getElementById("game");
 		game.style.width = width + "px";
 		game.style.height = height + "px";
 		#end
+		targetRectangle = Scaler.targetRect(sysOptions.width, sysOptions.height, width, height, System.screenRotation);
 	}
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {

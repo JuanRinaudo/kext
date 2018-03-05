@@ -25,6 +25,11 @@ class BoundingRect {
 	public inline function setScale(vector:Vector2) {
 		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
 	}
+	
+	public inline function setScaleFromCenter(vector:Vector2) {
+		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
+		offset = new Vector2(originalSize.x * vector.x * 0.5, originalSize.y * vector.y * 0.5);
+	}
 
 	public inline function setOffset(vector:Vector2) {
 		offset = vector;

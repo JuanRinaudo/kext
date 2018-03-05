@@ -66,8 +66,8 @@ class MouseInput extends Basic
 	}
 	
 	private function mouseDownListener(index:Int, x:Int, y:Int) {
-		_mousePosition.x = x;
-		_mousePosition.y = y;
+		_mousePosition.x = (x - Application.targetRectangle.x) / Application.targetRectangle.scaleFactor;
+		_mousePosition.y = (y - Application.targetRectangle.y) / Application.targetRectangle.scaleFactor;
 		_mousePosDelta.x = 0;
 		_mousePosDelta.y = 0;
 		buttonData.set(index, PRESSED);
@@ -76,8 +76,8 @@ class MouseInput extends Basic
 	}
 	
 	private function mouseUpListener(index:Int, x:Int, y:Int) {
-		_mousePosition.x = x;
-		_mousePosition.y = y;
+		_mousePosition.x = (x - Application.targetRectangle.x) / Application.targetRectangle.scaleFactor;
+		_mousePosition.y = (y - Application.targetRectangle.y) / Application.targetRectangle.scaleFactor;
 		_mousePosDelta.x = 0;
 		_mousePosDelta.y = 0;
 		buttonData.set(index, RELEASED);
@@ -86,8 +86,8 @@ class MouseInput extends Basic
 	}
 	
 	private function mouseMoveListener(x:Int, y:Int, deltaX:Int, deltaY:Int) {
-		_mousePosition.x = x;
-		_mousePosition.y = y;
+		_mousePosition.x = (x - Application.targetRectangle.x) / Application.targetRectangle.scaleFactor;
+		_mousePosition.y = (y - Application.targetRectangle.y) / Application.targetRectangle.scaleFactor;
 		_mousePosDelta.x = deltaX;
 		_mousePosDelta.y = deltaY;
 		onMouseMove.dispatch({x: x, y: y, deltaX: deltaX, deltaY: deltaY});
