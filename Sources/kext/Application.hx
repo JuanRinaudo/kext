@@ -1,5 +1,6 @@
 package kext;
 
+import kha.graphics2.ImageScaleQuality;
 import kha.Assets;
 import kha.Color;
 import kha.Framebuffer;
@@ -120,18 +121,9 @@ class Application {
 		document = Browser.document;
 		window = Browser.window;
 		game = document.getElementById("game");
-		// untyped __js__("addEventListener('click', function() { //Fullscreen
-		// 	var el = document.documentElement;
-		// 	var rfs = el.requestFullscreen
-		// 		|| el.webkitRequestFullScreen
-		// 		|| el.mozRequestFullScreen
-		// 		|| el.msRequestFullscreen;
-		// 	rfs.call(el);
-		// });");
 		#end
 
 		System.init(systemOptions, onInit);
-		addResizeHandler();
 
 		if(Application.instance == null) {
 			Application.instance = this;
@@ -163,6 +155,9 @@ class Application {
 		touch = new TouchInput();
 
 		platform = new Platform();
+
+		addResizeHandler();
+		addFullscreenHandler();
 
 		createBuffers(sysOptions.width, sysOptions.height);
 
@@ -236,6 +231,7 @@ class Application {
 		}
 		debug.render(backbuffer);
 
+		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
 		framebuffer.g2.begin(true);
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
@@ -264,6 +260,34 @@ class Application {
 		game.style.height = height + "px";
 		#end
 		targetRectangle = Scaler.targetRect(sysOptions.width, sysOptions.height, width, height, System.screenRotation);
+	}
+
+	private function addFullscreenHandler() {
+		#if js
+		if(platform.isMobile) {
+			untyped __js__("
+			var element = document.getElementById('khanvas');
+			element.addEventListener('touchend', function() { //Fullscreen
+				if(element.requestFullscreen) {
+					element.requestFullscreen();
+				} else if(element.webkitRequestFullScreen) {
+					element.webkitRequestFullScreen();
+				} else if(element.mozRequestFullScreen) {
+					element.mozRequestFullScreen();
+				} else if(element.msRequestFullscreen) {
+					element.msRequestFullscreen();
+				}
+			});");
+		}
+		// untyped __js__("addEventListener('click', function() { //Fullscreen
+		// 	var el = document.documentElement;
+		// 	var rfs = el.requestFullscreen
+		// 		|| el.webkitRequestFullScreen
+		// 		|| el.mozRequestFullScreen
+		// 		|| el.msRequestFullscreen;
+		// 	rfs.call(el);
+		// });");
+		#end
 	}
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {

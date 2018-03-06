@@ -26,9 +26,6 @@ class BasicSprite {
 	public var image:Image;
 	public var subimage:Rectangle;
 
-	public var inputPressed(get, null):Bool;
-	public var inputDown(get, null):Bool;
-
 	public var color:Color;
 
 	public function new(x:Float, y:Float, spriteImage:Image) {
@@ -73,12 +70,14 @@ class BasicSprite {
 		subimage = new Rectangle(x, y, width, height);
 	}
 
-	public inline function get_inputPressed():Bool {
-		return Application.mouse.buttonPressed(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
+	public inline function inputPressed(inputVector:Vector2):Bool {
+		if(inputVector == null) { inputVector = Application.mouse.mousePosition; }
+		return Application.mouse.buttonPressed(0) && bounds.checkVectorOverlap(inputVector);
 	}
 
-	public inline function get_inputDown():Bool {
-		return Application.mouse.buttonDown(0) && bounds.checkVectorOverlap(Application.mouse.mousePosition);
+	public inline function inputDown(inputVector:Vector2):Bool {
+		if(inputVector == null) { inputVector = Application.mouse.mousePosition; }
+		return Application.mouse.buttonDown(0) && bounds.checkVectorOverlap(inputVector);
 	}
 
 	public function centerOrigin() {
