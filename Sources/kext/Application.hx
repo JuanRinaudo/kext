@@ -226,15 +226,14 @@ class Application {
 			backbuffer.g2.end();
 		}
 
-		if(currentState != null) {
-			currentState.renderUI(backbuffer);
-		}
 		debug.render(backbuffer);
 
 		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
 		framebuffer.g2.begin(true);
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
+
+		currentState.renderFramebuffer(framebuffer);
 	}
 
 	private function addResizeHandler() {
