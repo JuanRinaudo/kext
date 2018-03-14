@@ -1,6 +1,7 @@
 package kext;
 
 import kha.Image;
+import kha.Framebuffer;
 
 class Basic {
 
@@ -22,7 +23,7 @@ class Basic {
 		#end
 	}
 
-	public function renderUI(backbuffer:Image) {
+	public function renderFramebuffer(framebuffer:Framebuffer) {
 		#if debug
 		#end
 	}

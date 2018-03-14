@@ -9,12 +9,15 @@ class DataBuilder {
 
 	static private function getType(data:Dynamic, fieldname:String) {
 		var value:String = Reflect.field(data, fieldname);
+		var dynArray:Array<Dynamic>;
 		if(Type.typeof(value) == Type.typeof(1)) {
 			return FVar(macro: Int, macro $v{value});
 		} else if(Type.typeof(value) == Type.typeof(0.1)) {
 			return FVar(macro: Float, macro $v{value});
 		} else if(Type.typeof(value) == Type.typeof(true)) {
 			return FVar(macro: Bool, macro $v{value});
+		} else if(Type.typeof(value) == Type.typeof("")) {
+			return FVar(macro: String, macro $v{value});
 		} else if(Type.typeof(value) == Type.typeof({})) {
 			// if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y")) {
 			// 	return FVar(macro: kha.math.Vector2, macro $v{value.x, value.y)});
@@ -22,7 +25,7 @@ class DataBuilder {
 				return FVar(macro: Dynamic, macro $v{value});
 			// }
 		} else {
-			return FVar(macro: String, macro $v{value});
+			return FVar(macro: Dynamic, macro $v{value});
 		}
 	}
 

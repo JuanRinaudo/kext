@@ -45,44 +45,51 @@ class Debug extends Basic {
 	}
 
 	private function loadCompleteHandler() {
-		// cube = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(1, 1, 1, 1));
-		// cubeBound = BasicMesh.getOBJMesh(Assets.blobs.cube_obj, pipeline.vertexStructure, Color.fromFloats(0, 0.7, 0, 0.25));
+		if(Reflect.hasField(Assets.blobs, "cube_obj")) {
+			var cubeBlob = Reflect.getProperty(Assets.blobs, "cube_obj");
+			cube = BasicMesh.getOBJMesh(cubeBlob, pipeline.vertexStructure, Color.fromFloats(1, 1, 1, 1));
+			cubeBound = BasicMesh.getOBJMesh(cubeBlob, pipeline.vertexStructure, Color.fromFloats(0, 0.7, 0, 0.25));
+		}
 	}
 
 	public static function drawDebugBoundingCube(backbuffer:Image, fromPipeline:BasicPipeline, boundingCube:BoundingCube) {
-		var size:Vector3 = boundingCube.getCubeSize().mult(0.5);
-		pipeline.camera = fromPipeline.camera;
+		if(cube != null) {
+			var size:Vector3 = boundingCube.getCubeSize().mult(0.5);
+			pipeline.camera = fromPipeline.camera;
 
-		cube.setPosition(boundingCube.position.add(boundingCube.v1));
-		cube.setSize(size.mult(0.1));
-		cube.drawMesh(backbuffer, pipeline);
-		cube.setPosition(boundingCube.position.add(boundingCube.v2));
-		cube.setSize(size.mult(0.1));
-		cube.drawMesh(backbuffer, pipeline);
+			cube.setPosition(boundingCube.position.add(boundingCube.v1));
+			cube.setSize(size.mult(0.1));
+			cube.drawMesh(backbuffer, pipeline);
+			cube.setPosition(boundingCube.position.add(boundingCube.v2));
+			cube.setSize(size.mult(0.1));
+			cube.drawMesh(backbuffer, pipeline);
 
-		cube.setPosition(boundingCube.position);
-		cube.setSize(size.mult(0.1));
-		cube.drawMesh(backbuffer, pipeline);
-		
-		cubeBound.setPosition(boundingCube.getCubeCenter());
-		cubeBound.setSize(size);
-		cubeBound.drawMesh(backbuffer, pipeline);
+			cube.setPosition(boundingCube.position);
+			cube.setSize(size.mult(0.1));
+			cube.drawMesh(backbuffer, pipeline);
+			
+			cubeBound.setPosition(boundingCube.getCubeCenter());
+			cubeBound.setSize(size);
+			cubeBound.drawMesh(backbuffer, pipeline);
 
-		backbuffer.g4.setPipeline(fromPipeline);
+			backbuffer.g4.setPipeline(fromPipeline);
+		}
 	}
 
 	public static function drawDebugCube(backbuffer:Image, projectionViewMatrix:FastMatrix4, position:Vector3, size:Float) { //TODO Refactor this and SimpleLighting.hx to use new function 
-		backbuffer.g4.setPipeline(pipeline);
+		if(cube != null) {
+			backbuffer.g4.setPipeline(pipeline);
 
-		backbuffer.g4.setVertexBuffer(cube.vertexBuffer);
-		backbuffer.g4.setIndexBuffer(cube.indexBuffer);
+			backbuffer.g4.setVertexBuffer(cube.vertexBuffer);
+			backbuffer.g4.setIndexBuffer(cube.indexBuffer);
 
-		var modelMatrix:FastMatrix4 = FastMatrix4.identity()
-			.multmat(FastMatrix4.translation(position.x, position.y, position.z))
-			.multmat(FastMatrix4.scale(size, size, size));
-		var mvpMatrix:FastMatrix4 = projectionViewMatrix.multmat(modelMatrix);
-		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, mvpMatrix);
-		backbuffer.g4.drawIndexedVertices();
+			var modelMatrix:FastMatrix4 = FastMatrix4.identity()
+				.multmat(FastMatrix4.translation(position.x, position.y, position.z))
+				.multmat(FastMatrix4.scale(size, size, size));
+			var mvpMatrix:FastMatrix4 = projectionViewMatrix.multmat(modelMatrix);
+			backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, mvpMatrix);
+			backbuffer.g4.drawIndexedVertices();
+		}
 	}
 
 	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color = null) {

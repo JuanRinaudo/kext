@@ -24,8 +24,12 @@ class Countdown {
 		return currentValue != 0;
 	}
 
-	public inline  function start() {
+	public inline function start() {
 		currentValue = targetValue;
+	}
+
+	public inline function end() {
+		currentValue = 0;
 	}
 
 }

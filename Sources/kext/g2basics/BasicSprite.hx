@@ -28,6 +28,8 @@ class BasicSprite {
 
 	public var color:Color;
 
+	public var exists:Bool;
+
 	public function new(x:Float, y:Float, spriteImage:Image) {
 		position = new Vector2(x, y);
 		scale = new Vector2(1, 1);
@@ -44,6 +46,8 @@ class BasicSprite {
 		centerOrigin();
 
 		bounds = BoundingRect.fromSprite(this);
+
+		exists = true;
 	}
 
 	public function draw(backbuffer:Image) {
