@@ -25,9 +25,10 @@ import kext.input.TouchInput;
 import kext.events.ApplicationStartEvent;
 import kext.events.ApplicationEndEvent;
 import kext.events.LoadCompleteEvent;
+import kext.events.ResizeEvent;
+import kext.events.FullscreenEvent;
 
 import kext.utils.Counter;
-import kext.utils.Platform;
 
 import kha.graphics4.PipelineState;
 import kha.graphics4.ConstantLocation;
@@ -38,11 +39,10 @@ import kha.graphics4.DepthStencilFormat;
 
 import kext.debug.Debug;
 
-#if js
-import js.Browser;
-import js.html.Document;
-import js.html.Window;
-import js.html.Element;
+#if (js && !kha_krom)
+import kext.platform.html5.Platform;
+#elseif kha_krom
+import kext.platform.krom.Platform;
 #end
 
 using kext.UniformType;
@@ -75,7 +75,6 @@ class Application {
 
 	public static var width:Float = 0;
 	public static var height:Float = 0;
-	public static var targetRectangle:TargetRectangle;
 
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
@@ -90,6 +89,8 @@ class Application {
 	public static var onApplicationStart:Signal<ApplicationStartEvent> = new Signal();
 	public static var onApplicationEnd:Signal<ApplicationEndEvent> = new Signal();
 	public static var onLoadComplete:Signal<LoadCompleteEvent> = new Signal();
+	public static var onResize:Signal<ResizeEvent> = new Signal();
+	public static var onFullscreen:Signal<FullscreenEvent> = new Signal();
 
 	public static var time:Float = 0;
 	public static var deltaTime(default, null):Float = 0;
@@ -101,12 +102,6 @@ class Application {
 
 	private static var updateCounters:Array<Counter> = [];
 
-	#if js
-	private var document:Document;
-	private var window:Window;
-	private var game:Element;
-	#end
-
 	private var debug:Debug;
 
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
@@ -116,12 +111,6 @@ class Application {
 		options = defaultApplicationOptions(applicationOptions);
 		
 		deltaTime = options.updatePeriod;
-
-		#if (js && !kha_krom)
-		document = Browser.document;
-		window = Browser.window;
-		game = document.getElementById("game");
-		#end
 
 		System.init(systemOptions, onInit);
 
@@ -154,10 +143,9 @@ class Application {
 		mouse = new MouseInput();
 		touch = new TouchInput();
 
-		platform = new Platform();
-
-		addResizeHandler();
-		addFullscreenHandler();
+		platform = new Platform(sysOptions);
+		platform.addResizeHandler();
+		platform.addFullscreenHandler();
 
 		createBuffers(sysOptions.width, sysOptions.height);
 
@@ -235,59 +223,6 @@ class Application {
 		framebuffer.g2.begin(true);
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
-	}
-
-	private function addResizeHandler() {
-		#if (js && !kha_krom)
-		window.onresize = resizeHandler;
-		#end
-		resizeHandler();
-	}
-
-	private function resizeHandler() {
-		#if (js && !kha_krom)
-		var width:Int = window.innerWidth;
-		var height:Int = window.innerHeight;
-		#end
-		changeResolution(width, height);
-	}
-
-	private function changeResolution(width:Int, height:Int) {
-		#if (js && !kha_krom)
-		var document = js.Browser.document;
-		var game = document.getElementById("game");
-		game.style.width = width + "px";
-		game.style.height = height + "px";
-		#end
-		targetRectangle = Scaler.targetRect(sysOptions.width, sysOptions.height, width, height, System.screenRotation);
-	}
-
-	private function addFullscreenHandler() {
-		#if js
-		if(platform.isMobile) {
-			untyped __js__("
-			var element = document.getElementById('khanvas');
-			element.addEventListener('touchend', function() { //Fullscreen
-				if(element.requestFullscreen) {
-					element.requestFullscreen();
-				} else if(element.webkitRequestFullScreen) {
-					element.webkitRequestFullScreen();
-				} else if(element.mozRequestFullScreen) {
-					element.mozRequestFullScreen();
-				} else if(element.msRequestFullscreen) {
-					element.msRequestFullscreen();
-				}
-			});");
-		}
-		// untyped __js__("addEventListener('click', function() { //Fullscreen
-		// 	var el = document.documentElement;
-		// 	var rfs = el.requestFullscreen
-		// 		|| el.webkitRequestFullScreen
-		// 		|| el.mozRequestFullScreen
-		// 		|| el.msRequestFullscreen;
-		// 	rfs.call(el);
-		// });");
-		#end
 	}
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {
@@ -381,8 +316,8 @@ class Application {
 	}
 
 	public static function screenToGamePosition(vector:Vector2):Vector2 {
-		return new Vector2((vector.x - Application.targetRectangle.x) / Application.targetRectangle.scaleFactor,
-			(vector.y - Application.targetRectangle.y) / Application.targetRectangle.scaleFactor);
+		return new Vector2((vector.x - platform.targetRectangle.x) / platform.targetRectangle.scaleFactor,
+			(vector.y - platform.targetRectangle.y) / platform.targetRectangle.scaleFactor);
 	} 
 
 	public static function addCounterUpdate(counter:Counter) {
