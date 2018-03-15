@@ -11,7 +11,7 @@ import kha.math.FastMatrix3;
 import kext.math.Rectangle;
 import kext.math.BoundingRect;
 
-class BasicSprite {
+class BasicSprite extends Basic {
 
 	public var position:Vector2;
 	public var scale:Vector2;
@@ -31,6 +31,8 @@ class BasicSprite {
 	public var exists:Bool;
 
 	public function new(x:Float, y:Float, spriteImage:Image) {
+		super();
+
 		position = new Vector2(x, y);
 		scale = new Vector2(1, 1);
 		rotation = 0;
@@ -50,7 +52,7 @@ class BasicSprite {
 		exists = true;
 	}
 
-	public function draw(backbuffer:Image) {
+	override public function render(backbuffer:Image) {
 		backbuffer.g2.color = color;
 
 		transform._00 = scale.x;
@@ -74,19 +76,16 @@ class BasicSprite {
 		subimage = new Rectangle(x, y, width, height);
 	}
 
-	public inline function inputPressed(inputVector:Vector2):Bool {
-		if(inputVector == null) { inputVector = Application.mouse.mousePosition; }
-		return Application.mouse.buttonPressed(0) && bounds.checkVectorOverlap(inputVector);
-	}
-
-	public inline function inputDown(inputVector:Vector2):Bool {
-		if(inputVector == null) { inputVector = Application.mouse.mousePosition; }
-		return Application.mouse.buttonDown(0) && bounds.checkVectorOverlap(inputVector);
-	}
-
 	public function centerOrigin() {
 		origin.x = image.width * 0.5;
 		origin.y = image.height * 0.5;
+	}
+
+	public function getScaleToSize(width:Float, height:Float) {
+		var scaleX:Float = width / image.width;
+		var scaleY:Float = height / image.height;
+		var scale = Math.max(scaleX, scaleY);
+		return scale;
 	}
 
 }

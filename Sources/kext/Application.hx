@@ -3,6 +3,7 @@ package kext;
 import kha.graphics2.ImageScaleQuality;
 import kha.Assets;
 import kha.Color;
+import kha.Font;
 import kha.Framebuffer;
 import kha.Image;
 import kha.System;
@@ -43,6 +44,8 @@ import kext.debug.Debug;
 import kext.platform.html5.Platform;
 #elseif kha_krom
 import kext.platform.krom.Platform;
+#elseif kha_android
+import kext.platform.android.Platform;
 #end
 
 using kext.UniformType;
@@ -51,7 +54,8 @@ typedef ApplicationOptions = {
 	?updateStart:Float,
 	?updatePeriod:Float,
 	initState:Class<AppState>,
-	?stateArguments:Array<Dynamic>
+	?stateArguments:Array<Dynamic>,
+	defaultFontName:String
 }
 
 typedef PostProcessingUniform = {
@@ -101,6 +105,8 @@ class Application {
 	private static var postProcessingUniforms:Map<FragmentShader, Map<String, PostProcessingUniform>>;
 
 	private static var updateCounters:Array<Counter> = [];
+
+	public static var defaultFont(default, null):Font;
 
 	private var debug:Debug;
 
@@ -172,6 +178,8 @@ class Application {
 
 		Scheduler.removeTimeTask(loaderUpdateID);
 		Scheduler.addTimeTask(updatePass, options.updateStart, options.updatePeriod);
+
+		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
 		
 		currentState = Type.createInstance(options.initState, options.stateArguments);
 	
@@ -272,6 +280,8 @@ class Application {
 			time += options.updatePeriod;
 			currentState.update(options.updatePeriod);
 		}
+
+		platform.update(options.updatePeriod);
 
 		gamepad.update(options.updatePeriod);
 		keyboard.update(options.updatePeriod);

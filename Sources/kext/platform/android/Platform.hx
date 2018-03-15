@@ -1,8 +1,9 @@
-package kext.platform.krom;
+package kext.platform.android;
 
 import kha.Scaler;
 import kha.Scaler.TargetRectangle;
 import kha.System;
+import kha.SystemImpl;
 import kha.System.SystemOptions;
 
 import kext.platform.IPlatform;
@@ -15,6 +16,9 @@ class Platform implements IPlatform {
 	public var isDesktop(default, null):Bool;
 
 	private var sysOptions:SystemOptions;
+
+	private var width:Int;
+	private var height:Int;
 	
 	public function new(systemOptions:SystemOptions) {
 		isMobile = checkMobile();
@@ -22,13 +26,13 @@ class Platform implements IPlatform {
 
 		sysOptions = systemOptions;
 
-		var width:Int = Math.floor(Application.width);
-		var height:Int = Math.floor(Application.height);
-		targetRectangle = Scaler.targetRect(systemOptions.width, systemOptions.height, width, height, System.screenRotation);
+		resizeHandler();
 	}
 
 	public function update(delta:Float) {
-		
+		if(SystemImpl.windowWidth(0) != width || SystemImpl.windowHeight(0) != height) {
+			resizeHandler();
+		}
 	}
 
 	public function addResizeHandler() {
@@ -36,7 +40,9 @@ class Platform implements IPlatform {
 	}
 
 	private function resizeHandler() {
-		
+		width = SystemImpl.windowWidth(0);
+		height = SystemImpl.windowHeight(0);
+		targetRectangle = Scaler.targetRect(sysOptions.width, sysOptions.height, width, height, System.screenRotation);	
 	}
 
 	private function changeResolution(width:Int, height:Int) {
@@ -48,11 +54,11 @@ class Platform implements IPlatform {
 	}
 
 	private static inline function checkDesktop() {
-		return true;
+		return false;
 	}
 
 	private static inline function checkMobile():Bool {
-		return false;
+		return true;
 	}
 
 }

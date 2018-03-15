@@ -30,7 +30,7 @@ class STLMeshLoader {
 		index+=4;
 
 		var mesh:STLMeshData = {
-			#if js
+			#if (js || kha_android_java)
 			normals: new Float32Array(triangles * 3), //One V3 per normal
 			vertexes: new Float32Array(triangles * 9), //V3, one for each vertex in the triangle
 			#else

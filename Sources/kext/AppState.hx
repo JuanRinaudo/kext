@@ -24,7 +24,7 @@ class AppState extends Basic {
 		backbuffer.g4.clear(clearColor != null ? clearColor : Color.Black, Math.POSITIVE_INFINITY);
 	}
 
-	private inline function createZUI() {
+	private function createZUI() {
 		ui = new Zui({font: Assets.fonts.KenPixel});
 	}
 

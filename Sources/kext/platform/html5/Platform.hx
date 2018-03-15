@@ -36,6 +36,10 @@ class Platform implements IPlatform {
 		canvas = document.getElementById("khanvas");
 	}
 
+	public function update(delta:Float) {
+		
+	}
+
 	public function addResizeHandler() {
 		window.onresize = resizeHandler;
 		resizeHandler();

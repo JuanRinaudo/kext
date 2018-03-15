@@ -61,7 +61,7 @@ class OBJMeshLoader {
 		var vertexCount:UInt = triangleVertexes.length;
 		
 		var mesh:OBJMeshData = {
-			#if js
+			#if (js || kha_android_java)
 			vertexes: new Float32Array(vertexCount * 3),
 			uvs: new Float32Array(vertexCount * 2),
 			normals: new Float32Array(vertexCount * 3),

@@ -19,11 +19,11 @@ class DataBuilder {
 		} else if(Type.typeof(value) == Type.typeof("")) {
 			return FVar(macro: String, macro $v{value});
 		} else if(Type.typeof(value) == Type.typeof({})) {
-			// if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y")) {
-			// 	return FVar(macro: kha.math.Vector2, macro $v{value.x, value.y)});
-			// } else { //TODO: Check if having vectors is posible.
+			if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y")) {
+				return FVar(macro: kha.math.Vector2, macro $v{value});
+			} else {
 				return FVar(macro: Dynamic, macro $v{value});
-			// }
+			}
 		} else {
 			return FVar(macro: Dynamic, macro $v{value});
 		}
