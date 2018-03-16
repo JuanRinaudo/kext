@@ -19,6 +19,8 @@ import kext.loaders.STLMeshLoader;
 import kext.loaders.STLMeshLoader.STLMeshData;
 import kext.loaders.OBJMeshLoader;
 import kext.loaders.OBJMeshLoader.OBJMeshData;
+import kext.loaders.OGEXMeshLoader;
+import kext.loaders.OGEXMeshLoader.OGEXMeshData;
 
 class BasicMesh {
 
@@ -273,6 +275,57 @@ class BasicMesh {
 		mesh.indexCount = data.triangleCount * 3;
 		mesh.triangleCount = data.triangleCount;
 
+		return mesh;
+	}
+
+	public static function fromOGEXData(data:OGEXMeshData, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		if(data.geometries.length == 0) { return null; }
+
+		var geometry = data.geometries[0];
+		
+		var mesh:BasicMesh = new BasicMesh(geometry.vertexCount, geometry.triangleCount * 3, structure, vertexUsage, indexUsage);
+
+		var vertexes = mesh.vertexBuffer.lock();
+		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
+		var baseIndex:Int = 0;
+		var normalIndex:Int = 0;
+		for(i in 0...geometry.vertexCount) {
+			baseIndex = i * vertexStep;
+			
+			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
+			
+			vertexes.set(baseIndex + VERTEX_OFFSET + 0, geometry.vertexes.get(i * 3 + 0));
+			vertexes.set(baseIndex + VERTEX_OFFSET + 1, geometry.vertexes.get(i * 3 + 1));
+			vertexes.set(baseIndex + VERTEX_OFFSET + 2, geometry.vertexes.get(i * 3 + 2));
+			
+			vertexes.set(baseIndex + UV_OFFSET + 0, geometry.uvs.get(i * 2 + 0));
+			vertexes.set(baseIndex + UV_OFFSET + 1, geometry.uvs.get(i * 2 + 1));
+			
+			vertexes.set(baseIndex + NORMAL_OFFSET + 0, geometry.normals.get(i * 3 + 0));
+			vertexes.set(baseIndex + NORMAL_OFFSET + 1, geometry.normals.get(i * 3 + 1));
+			vertexes.set(baseIndex + NORMAL_OFFSET + 2, geometry.normals.get(i * 3 + 2));
+		}
+		mesh.vertexBuffer.unlock();
+		
+		var indexes = mesh.indexBuffer.lock();
+		for(i in 0...geometry.triangleCount * 3) {
+			indexes.set(i, geometry.indices.get(i));
+		}
+		mesh.indexBuffer.unlock();
+
+		mesh.vertexCount = geometry.vertexCount;
+		mesh.indexCount = geometry.triangleCount * 3;
+		mesh.triangleCount = geometry.triangleCount;
+
+		return mesh;
+	}
+
+	public static inline function getOGEXMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
+		var ogexMeshData = OGEXMeshLoader.parse(blob);
+		var mesh:BasicMesh = BasicMesh.fromOGEXData(ogexMeshData, structure);
+		if(color != null) {
+			BasicMesh.setAllVertexesColor(mesh, structure, color);
+		}
 		return mesh;
 	}
 
