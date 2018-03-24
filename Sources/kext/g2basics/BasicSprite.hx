@@ -74,11 +74,20 @@ class BasicSprite extends Basic {
 
 	public inline function setSubimage(x:Float, y:Float, width:Float, height:Float) {
 		subimage = new Rectangle(x, y, width, height);
+		box.x = width;
+		box.y = height;
+		centerOrigin();
+		bounds.setScaleFromCenter();
 	}
 
 	public function centerOrigin() {
-		origin.x = image.width * 0.5;
-		origin.y = image.height * 0.5;
+		if(subimage != null) {
+			origin.x = subimage.width * 0.5;
+			origin.y = subimage.height * 0.5;
+		} else {
+			origin.x = image.width * 0.5;
+			origin.y = image.height * 0.5;
+		}
 	}
 
 	public function getScaleToSize(width:Float, height:Float) {

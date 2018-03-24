@@ -9,26 +9,33 @@ class BoundingRect {
 	public var position:Vector2;
 	public var offset:Vector2;
 	public var size:Vector2;
-	private var originalSize:Vector2;
+	public var originalSize:Vector2;
 
 	public inline function new(boxPosition:Vector2, boxSize:Vector2, boxOffset:Vector2 = null) {
 		position = boxPosition;
-		size = boxSize;
-		originalSize = boxSize.mult(1);
+		size = boxSize.mult(1);
+		originalSize = boxSize;
 		offset = boxOffset == null ? new Vector2(0, 0) : boxOffset;
 	}
 
 	public inline function setSize(vector:Vector2) {
-		size = new Vector2(vector.x, vector.y);
+		originalSize = new Vector2(vector.x, vector.y);
+		size = originalSize.mult(1);
 	}
 
 	public inline function setScale(vector:Vector2) {
 		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
 	}
 	
-	public inline function setScaleFromCenter(vector:Vector2) {
+	public inline function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
+		if(vector == null) { vector = new Vector2(1, 1); }
+
 		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
-		offset = new Vector2(originalSize.x * vector.x * 0.5, originalSize.y * vector.y * 0.5);
+		if(offsetAdd != null) {
+			offset = new Vector2(originalSize.x * vector.x * 0.5 + offsetAdd.x, originalSize.y * vector.y * 0.5 + offsetAdd.y);
+		} else {
+			offset = new Vector2(originalSize.x * vector.x * 0.5, originalSize.y * vector.y * 0.5);
+		}
 	}
 
 	public inline function setOffset(vector:Vector2) {
