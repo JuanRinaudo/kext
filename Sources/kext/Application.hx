@@ -287,13 +287,12 @@ class Application {
 		}
 
 		platform.update(options.updatePeriod);
+		debug.update(options.updatePeriod);
 
 		gamepad.update(options.updatePeriod);
 		keyboard.update(options.updatePeriod);
 		mouse.update(options.updatePeriod);
 		touch.update(options.updatePeriod);
-
-		debug.update(options.updatePeriod);
 	}
 
 	public static function getNextID():UInt {
