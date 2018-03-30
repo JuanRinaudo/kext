@@ -34,8 +34,7 @@ class Debug extends Basic {
 	}
 
 	override public function update(delta:Float) {
-		var keyboard = Application.keyboard;
-		if(keyboard.keyPressed(KeyCode.Shift) && keyboard.keyPressed(KeyCode.D)) {
+		if(Application.keyboard.keyDown(KeyCode.Shift) && Application.keyboard.keyPressed(KeyCode.D)) {
 			debugOn = !debugOn;
 		}
 	}
@@ -53,7 +52,7 @@ class Debug extends Basic {
 	}
 
 	public static function drawDebugBoundingCube(backbuffer:Image, fromPipeline:BasicPipeline, boundingCube:BoundingCube) {
-		if(cube != null) {
+		if(debugOn && cube != null) {
 			var size:Vector3 = boundingCube.getCubeSize().mult(0.5);
 			pipeline.camera = fromPipeline.camera;
 
@@ -77,7 +76,7 @@ class Debug extends Basic {
 	}
 
 	public static function drawDebugCube(backbuffer:Image, projectionViewMatrix:FastMatrix4, position:Vector3, size:Float) { //TODO Refactor this and SimpleLighting.hx to use new function 
-		if(cube != null) {
+		if(debugOn && cube != null) {
 			backbuffer.g4.setPipeline(pipeline);
 
 			backbuffer.g4.setVertexBuffer(cube.vertexBuffer);
@@ -93,15 +92,17 @@ class Debug extends Basic {
 	}
 
 	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color = null) {
-		backbuffer.g2.color = color != null ? color : boundsColor;
-		backbuffer.g2.transformation._00 = 1;
-		backbuffer.g2.transformation._11 = 1;
-		backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;
-		backbuffer.g2.transformation._21 = bounds.position.y - bounds.offset.y;
-		if(bounds.checkVectorOverlap(kext.Application.mouse.mousePosition)) {
-			backbuffer.g2.color = Color.Red;
+		if(debugOn) {
+			backbuffer.g2.color = color != null ? color : boundsColor;
+			backbuffer.g2.transformation._00 = 1;
+			backbuffer.g2.transformation._11 = 1;
+			backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;
+			backbuffer.g2.transformation._21 = bounds.position.y - bounds.offset.y;
+			if(bounds.checkVectorOverlap(kext.Application.mouse.mousePosition)) {
+				backbuffer.g2.color = Color.Red;
+			}
+			backbuffer.g2.drawRect(0, 0, bounds.size.x * bounds.scale.x, bounds.size.y * bounds.scale.y);
 		}
-		backbuffer.g2.drawRect(0, 0, bounds.size.x * bounds.scale.x, bounds.size.y * bounds.scale.y);
 	}
 
 }

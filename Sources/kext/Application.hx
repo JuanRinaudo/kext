@@ -55,7 +55,9 @@ typedef ApplicationOptions = {
 	?updatePeriod:Float,
 	initState:Class<AppState>,
 	?stateArguments:Array<Dynamic>,
-	defaultFontName:String
+	defaultFontName:String,
+	bufferWidth:Int,
+	bufferHeight:Int,
 }
 
 typedef PostProcessingUniform = {
@@ -112,9 +114,9 @@ class Application {
 
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
 		sysOptions = defaultSystemOptions(systemOptions);
-		width = systemOptions.width;
-		height = systemOptions.height;
 		options = defaultApplicationOptions(applicationOptions);
+		width = options.bufferWidth;
+		height = options.bufferHeight;
 		
 		deltaTime = options.updatePeriod;
 
@@ -127,18 +129,21 @@ class Application {
 		}
 	}
 
-	private function defaultApplicationOptions(applicationOptions:ApplicationOptions):ApplicationOptions {
-		if(applicationOptions.updateStart == null) { applicationOptions.updateStart = 0; }
-		if(applicationOptions.updatePeriod == null) { applicationOptions.updatePeriod = 1 / 60; }
-		if(applicationOptions.stateArguments == null) { applicationOptions.stateArguments = []; }
-		return applicationOptions;
-	}
-
 	private function defaultSystemOptions(systemOptions:SystemOptions):SystemOptions {
 		if(systemOptions.resizable == null) { systemOptions.resizable = true; }
 		if(systemOptions.maximizable == null) { systemOptions.maximizable = true; }
 		if(systemOptions.minimizable == null) { systemOptions.minimizable = true; }
 		return systemOptions;
+	}
+
+	private function defaultApplicationOptions(applicationOptions:ApplicationOptions):ApplicationOptions {
+		if(applicationOptions.updateStart == null) { applicationOptions.updateStart = 0; }
+		if(applicationOptions.updatePeriod == null) { applicationOptions.updatePeriod = 1 / 60; }
+		if(applicationOptions.stateArguments == null) { applicationOptions.stateArguments = []; }
+		if(applicationOptions.defaultFontName == null) { applicationOptions.defaultFontName = "KenPixel"; }
+		if(applicationOptions.bufferWidth == null) { applicationOptions.bufferWidth = sysOptions.width; }
+		if(applicationOptions.bufferHeight == null) { applicationOptions.bufferHeight = sysOptions.height; }
+		return applicationOptions;
 	}
 
 	private function onInit() {
@@ -153,7 +158,7 @@ class Application {
 		platform.addResizeHandler();
 		platform.addFullscreenHandler();
 
-		createBuffers(sysOptions.width, sysOptions.height);
+		createBuffers(options.bufferWidth, options.bufferHeight);
 
 		postProcessingPipelines = new Map();
 		postProcessingUniforms = new Map();
@@ -282,13 +287,12 @@ class Application {
 		}
 
 		platform.update(options.updatePeriod);
+		debug.update(options.updatePeriod);
 
 		gamepad.update(options.updatePeriod);
 		keyboard.update(options.updatePeriod);
 		mouse.update(options.updatePeriod);
 		touch.update(options.updatePeriod);
-
-		debug.update(options.updatePeriod);
 	}
 
 	public static function getNextID():UInt {
