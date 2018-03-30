@@ -98,7 +98,10 @@ class Debug extends Basic {
 		backbuffer.g2.transformation._11 = 1;
 		backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;
 		backbuffer.g2.transformation._21 = bounds.position.y - bounds.offset.y;
-		backbuffer.g2.drawRect(0, 0, bounds.size.x, bounds.size.y);
+		if(bounds.checkVectorOverlap(kext.Application.mouse.mousePosition)) {
+			backbuffer.g2.color = Color.Red;
+		}
+		backbuffer.g2.drawRect(0, 0, bounds.size.x * bounds.scale.x, bounds.size.y * bounds.scale.y);
 	}
 
 }

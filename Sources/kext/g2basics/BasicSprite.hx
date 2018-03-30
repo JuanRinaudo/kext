@@ -22,7 +22,7 @@ class BasicSprite extends Basic {
 
 	public var box:Vector2;
 
-	public var transform:FastMatrix3;
+	private var transform:FastMatrix3;
 	public var image:Image;
 	public var subimage:Rectangle;
 
@@ -68,7 +68,7 @@ class BasicSprite extends Basic {
 		}
 
 		#if debug
-			kext.debug.Debug.drawBounds(backbuffer, bounds);
+		kext.debug.Debug.drawBounds(backbuffer, bounds);
 		#end
 	}
 
@@ -77,8 +77,8 @@ class BasicSprite extends Basic {
 	}
 
 	public function centerOrigin() {
-		origin.x = image.width * 0.5;
-		origin.y = image.height * 0.5;
+		origin.x = box.x * 0.5;
+		origin.y = box.y * 0.5;
 	}
 
 	public function getScaleToSize(width:Float, height:Float) {
