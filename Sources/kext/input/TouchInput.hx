@@ -19,7 +19,7 @@ class TouchInput extends Basic
 	private var pressedQueue:Array<Int>;
 	private var releasedQueue:Array<Int>;
 
-	private var touches:Array<Int>;
+	public var touches:Array<Int>;
 	
 	public var onTouchStart:Signal<TouchStartEvent> = new Signal();
 	public var onTouchEnd:Signal<TouchEndEvent> = new Signal();
@@ -71,7 +71,7 @@ class TouchInput extends Basic
 	private function touchMoveListener(index:Int, x:Int, y:Int) {
 		var lastPosition:Vector2 = touchPosition.get(index);
 		if(lastPosition == null) {
-			lastPosition = new Vector2(x, y);
+			lastPosition = new Vector2(0, 0);
 			touchPosition.set(index, lastPosition);
 		}
 		var gamePosition:Vector2 = Application.screenToGamePosition(new Vector2(x, y));

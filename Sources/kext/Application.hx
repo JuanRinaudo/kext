@@ -81,6 +81,8 @@ class Application {
 
 	public static var width:Float = 0;
 	public static var height:Float = 0;
+	public static var bufferScaleX:Float = 0;
+	public static var bufferScaleY:Float = 0;
 
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
@@ -117,6 +119,8 @@ class Application {
 		options = defaultApplicationOptions(applicationOptions);
 		width = options.bufferWidth;
 		height = options.bufferHeight;
+		bufferScaleX = systemOptions.width / width;
+		bufferScaleY = systemOptions.height / height;
 		
 		deltaTime = options.updatePeriod;
 
@@ -329,8 +333,8 @@ class Application {
 	}
 
 	public static function screenToGamePosition(vector:Vector2):Vector2 {
-		return new Vector2((vector.x - platform.targetRectangle.x) / platform.targetRectangle.scaleFactor,
-			(vector.y - platform.targetRectangle.y) / platform.targetRectangle.scaleFactor);
+		return new Vector2((vector.x - platform.targetRectangle.x) / (platform.targetRectangle.scaleFactor * bufferScaleX),
+			(vector.y - platform.targetRectangle.y) / (platform.targetRectangle.scaleFactor * bufferScaleY));
 	} 
 
 	public static function addCounterUpdate(counter:Counter) {
