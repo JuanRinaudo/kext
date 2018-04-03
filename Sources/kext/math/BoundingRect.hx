@@ -9,32 +9,22 @@ class BoundingRect {
 	public var position:Vector2;
 	public var offset:Vector2;
 	public var size:Vector2;
-	public var originalSize:Vector2;
+	public var scale:Vector2;
 
-	public inline function new(boxPosition:Vector2, boxSize:Vector2, boxOffset:Vector2 = null) {
+	public inline function new(boxPosition:Vector2, boxSize:Vector2, boxOffset:Vector2 = null, boxScale:Vector2 = null) {
 		position = boxPosition;
-		size = boxSize.mult(1);
-		originalSize = boxSize;
+		size = boxSize;
 		offset = boxOffset == null ? new Vector2(0, 0) : boxOffset;
-	}
-
-	public inline function setSize(vector:Vector2) {
-		originalSize = new Vector2(vector.x, vector.y);
-		size = originalSize.mult(1);
-	}
-
-	public inline function setScale(vector:Vector2) {
-		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
+		scale = boxScale == null ? new Vector2(1, 1) : boxScale;
 	}
 	
+	public inline function setScaleFromCenter(vector:Vector2) {
 	public inline function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
-		if(vector == null) { vector = new Vector2(1, 1); }
-
-		size = new Vector2(originalSize.x * vector.x, originalSize.y * vector.y);
+		size = new Vector2(size.x * vector.x, size.y * vector.y);
 		if(offsetAdd != null) {
-			offset = new Vector2(originalSize.x * vector.x * 0.5 + offsetAdd.x, originalSize.y * vector.y * 0.5 + offsetAdd.y);
+			offset = new Vector2(size.x * vector.x * 0.5 + offsetAdd.x, size.y * vector.y * 0.5 + offsetAdd.y);
 		} else {
-			offset = new Vector2(originalSize.x * vector.x * 0.5, originalSize.y * vector.y * 0.5);
+			offset = new Vector2(size.x * vector.x * 0.5, size.y * vector.y * 0.5);
 		}
 	}
 
@@ -42,9 +32,11 @@ class BoundingRect {
 		offset = vector;
 	}
 
-	public inline function checkVectorOverlap(vector:Vector2) {
+	public function checkVectorOverlap(vector:Vector2) {
 		var tv1:Vector2 = position.sub(offset);
-		var tv2:Vector2 = position.sub(offset).add(size);
+		var tv2:Vector2 = position.sub(offset);
+		tv2.x += size.x * scale.x;
+		tv2.y += size.y * scale.y;
 		if(vector.x < tv1.x || vector.x > tv2.x) { return false; }
 		if(vector.y < tv1.y || vector.y > tv2.y) { return false; }
 		
@@ -53,9 +45,13 @@ class BoundingRect {
 
 	public function checkRectOverlap(rect:BoundingRect) {
 		var tv1:Vector2 = position.sub(offset);
-		var tv2:Vector2 = position.sub(offset).add(size);
+		var tv2:Vector2 = position.sub(offset);
+		tv2.x += size.x * scale.x;
+		tv2.y += size.y * scale.y;
 		var recttv1:Vector2 = rect.position.sub(rect.offset);
-		var recttv2:Vector2 = rect.position.sub(rect.offset).add(rect.size);
+		var recttv2:Vector2 = rect.position.sub(rect.offset);
+		recttv2.x += rect.size.x * rect.scale.x;
+		recttv2.y += rect.size.y * rect.scale.y;
 		if(tv1.x > recttv2.x) return false;
 		if(tv1.y > recttv2.y) return false;
 		if(tv2.x < recttv1.x) return false;
@@ -64,10 +60,8 @@ class BoundingRect {
 		return true;
 	}
 
-	public static function fromSprite(sprite:BasicSprite, scale:Vector2 = null, offset:Vector2 = null):BoundingRect {
-		var bounds = new BoundingRect(sprite.position, sprite.box, offset == null ? sprite.origin : offset);
-		bounds.setScale(scale == null ? new Vector2(Math.abs(sprite.scale.x), Math.abs(sprite.scale.y)) : scale);
-
+	public static function fromSprite(sprite:BasicSprite):BoundingRect {
+		var bounds = new BoundingRect(sprite.position, sprite.box, sprite.origin, sprite.scale);
 		return bounds;
 	}
 
