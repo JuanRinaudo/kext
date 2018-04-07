@@ -18,8 +18,10 @@ class BoundingRect {
 		scale = boxScale == null ? new Vector2(1, 1) : boxScale;
 	}
 	
-	public inline function setScaleFromCenter(vector:Vector2) {
-	public inline function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
+	public function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
+		if(vector == null) {
+			vector = new Vector2(1, 1);
+		}
 		size = new Vector2(size.x * vector.x, size.y * vector.y);
 		if(offsetAdd != null) {
 			offset = new Vector2(size.x * vector.x * 0.5 + offsetAdd.x, size.y * vector.y * 0.5 + offsetAdd.y);

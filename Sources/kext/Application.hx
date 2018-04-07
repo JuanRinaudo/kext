@@ -16,6 +16,8 @@ import kha.Scaler.TargetRectangle;
 import kha.math.Vector2;
 import kha.math.FastVector2;
 
+import kext.KEXTAssets;
+
 import kext.g4basics.BasicPipeline;
 
 import kext.input.GamepadInput;
@@ -182,17 +184,23 @@ class Application {
 	}
 
 	private function loadCompleteHandler() {
+		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
+		
+		KEXTAssets.parseAssets(Assets.blobs.kextassets_json, parsingCompleteHandler);
+	
+		onLoadComplete.dispatch();
+	}
+
+	private function parsingCompleteHandler() {
 		System.removeRenderListener(loaderRenderPass);
 		System.notifyOnRender(renderPass);
 
 		Scheduler.removeTimeTask(loaderUpdateID);
 		Scheduler.addTimeTask(updatePass, options.updateStart, options.updatePeriod);
 
-		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
+		trace(kext.KEXTAssets.atlas.FartResources);
 		
 		currentState = Type.createInstance(options.initState, options.stateArguments);
-	
-		onLoadComplete.dispatch();
 	}
 
 	private function loaderUpdatePass() {
