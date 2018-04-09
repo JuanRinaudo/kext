@@ -13,21 +13,32 @@ typedef AtlasData = {
 	frames:Map<String, Rectangle>
 }
 
+typedef FrameData = {
+	image:Image,
+	rectangle:Rectangle
+}
+
 class AtlasLoader {
 
 	public static function parse(blob:Blob):AtlasData {
-		var frameMap = new Map<String, Rectangle>();
 		var json = Json.parse(blob.toString());
-		var frameList:Array<Dynamic> = json.frames;
-		for(frame in frameList) {
-			frameMap.set(frame.filename, rectangleFromFrame(frame.frame));
-		}
 
 		var imageName:String = StringTools.replace(json.meta.image, ".png", "");
+		var image:Image = Assets.images.get(imageName);
+
+		var frameMap = new Map<String, Rectangle>();
+		var frameList:Array<Dynamic> = json.frames;
+		for(frame in frameList) {
+			var rectangle:Rectangle = rectangleFromFrame(frame.frame);
+			frameMap.set(frame.filename, rectangle);
+			Reflect.setField(ExtAssets.frames, frame.filename, {image:image, rectangle: rectangle});
+		}
+
 		var atlas = {
-			image: Assets.images.get(imageName),
+			image: image,
 			frames: frameMap
 		};
+		
 		return atlas;
 	}
 

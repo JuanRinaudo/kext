@@ -7,9 +7,10 @@ import kha.Blob;
 
 import kext.loaders.AtlasLoader;
 import kext.loaders.AtlasLoader.AtlasData;
+import kext.loaders.AtlasLoader.FrameData;
 
 @:keep
-@:build(kext.KEXTBuilder.build("atlas"))
+@:build(kext.ExtAssetBuilder.build("atlas"))
 private class AtlasList {
 	public function new() {
 		
@@ -20,11 +21,24 @@ private class AtlasList {
 	}
 }
 
-class KEXTAssets {
+@:keep
+@:build(kext.ExtAssetBuilder.build("frames"))
+private class FrameList {
+	public function new() {
+		
+	}
+
+	public function get(name: String): FrameData {
+		return Reflect.field(this, name);
+	}
+}
+
+class ExtAssets {
 
 	private static var onCompleteCallback:Void -> Void;
 
 	public static var atlas:AtlasList = new AtlasList();
+	public static var frames:FrameList = new FrameList();
 
 	public static function parseAssets(manifestJson:Blob, completeCallback:Void -> Void) {
 		onCompleteCallback = completeCallback;

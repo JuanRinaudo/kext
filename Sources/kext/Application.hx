@@ -16,7 +16,7 @@ import kha.Scaler.TargetRectangle;
 import kha.math.Vector2;
 import kha.math.FastVector2;
 
-import kext.KEXTAssets;
+import kext.ExtAssets;
 
 import kext.g4basics.BasicPipeline;
 
@@ -186,7 +186,7 @@ class Application {
 	private function loadCompleteHandler() {
 		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
 		
-		KEXTAssets.parseAssets(Assets.blobs.kextassets_json, parsingCompleteHandler);
+		ExtAssets.parseAssets(Assets.blobs.kextassets_json, parsingCompleteHandler);
 	
 		onLoadComplete.dispatch();
 	}
@@ -198,7 +198,8 @@ class Application {
 		Scheduler.removeTimeTask(loaderUpdateID);
 		Scheduler.addTimeTask(updatePass, options.updateStart, options.updatePeriod);
 
-		trace(kext.KEXTAssets.atlas.FartResources);
+		trace(kext.ExtAssets.atlas.FartResources);
+		trace(kext.ExtAssets.frames.Apple);
 		
 		currentState = Type.createInstance(options.initState, options.stateArguments);
 	}

@@ -11,6 +11,8 @@ import kha.math.FastMatrix3;
 import kext.math.Rectangle;
 import kext.math.BoundingRect;
 
+import kext.loaders.AtlasLoader.FrameData;
+
 class BasicSprite extends Basic {
 
 	public var position:Vector2;
@@ -42,7 +44,12 @@ class BasicSprite extends Basic {
 		subimage = null;
 
 		origin = new Vector2(0, 0);
-		box = new Vector2(image.width, image.height);
+		
+		if(image != null) {
+			box = new Vector2(image.width, image.height);
+		} else {
+			box = new Vector2(0, 0);
+		}
 
 		color = Color.White;
 		centerOrigin();
@@ -73,20 +80,32 @@ class BasicSprite extends Basic {
 	}
 
 	public inline function setSubimage(x:Float, y:Float, width:Float, height:Float) {
-		subimage = new Rectangle(x, y, width, height);
-		box.x = width;
-		box.y = height;
+		setSubimageRectangle(new Rectangle(x, y, width, height));
+	}
+
+	public function setSubimageRectangle(rectangle:Rectangle) {
+		subimage = rectangle;
+		box.x = rectangle.width;
+		box.y = rectangle.height;
 		centerOrigin();
 		bounds.setScaleFromCenter();
+	}
+
+	public inline function setFrame(frame:FrameData) {
+		image = frame.image;
+		setSubimageRectangle(frame.rectangle);
 	}
 
 	public function centerOrigin() {
 		if(subimage != null) {
 			origin.x = subimage.width * 0.5;
 			origin.y = subimage.height * 0.5;
-		} else {
+		} else if(image != null) {
 			origin.x = image.width * 0.5;
 			origin.y = image.height * 0.5;
+		} else {
+			origin.x = 0;
+			origin.y = 0;
 		}
 	}
 
@@ -95,6 +114,12 @@ class BasicSprite extends Basic {
 		var scaleY:Float = height / image.height;
 		var scale = Math.max(scaleX, scaleY);
 		return scale;
+	}
+
+	public static function fromFrame(x:Float, y:Float, frame:FrameData) {
+		var sprite:BasicSprite = new BasicSprite(x, y, frame.image);
+		sprite.setSubimageRectangle(frame.rectangle);
+		return sprite;
 	}
 
 }
