@@ -27,6 +27,7 @@ class BasicSprite extends Basic {
 	private var transform:FastMatrix3;
 	public var image:Image;
 	public var subimage:Rectangle;
+	public var frame:FrameData;
 
 	public var color:Color;
 
@@ -42,6 +43,7 @@ class BasicSprite extends Basic {
 		transform = FastMatrix3.identity();
 		image = spriteImage;
 		subimage = null;
+		frame = null;
 
 		origin = new Vector2(0, 0);
 		
@@ -83,30 +85,28 @@ class BasicSprite extends Basic {
 		setSubimageRectangle(new Rectangle(x, y, width, height));
 	}
 
-	public function setSubimageRectangle(rectangle:Rectangle) {
+	public function setSubimageRectangle(rectangle:Rectangle, sourceDelta:Vector2 = null) {
+		frame = null;
 		subimage = rectangle;
-		box.x = rectangle.width;
-		box.y = rectangle.height;
+		if(sourceDelta != null) {
+			box.x = rectangle.width + sourceDelta.x;
+			box.y = rectangle.height + sourceDelta.y;
+		} else {
+			box.x = rectangle.width;
+			box.y = rectangle.height;
+		}
 		centerOrigin();
-		bounds.setScaleFromCenter();
 	}
 
 	public inline function setFrame(frame:FrameData) {
 		image = frame.image;
-		setSubimageRectangle(frame.rectangle);
+		setSubimageRectangle(frame.rectangle, frame.sourceDelta);
+		this.frame = frame;
 	}
 
 	public function centerOrigin() {
-		if(subimage != null) {
-			origin.x = subimage.width * 0.5;
-			origin.y = subimage.height * 0.5;
-		} else if(image != null) {
-			origin.x = image.width * 0.5;
-			origin.y = image.height * 0.5;
-		} else {
-			origin.x = 0;
-			origin.y = 0;
-		}
+		origin.x = box.x * 0.5;
+		origin.y = box.y * 0.5;
 	}
 
 	public function getScaleToSize(width:Float, height:Float) {

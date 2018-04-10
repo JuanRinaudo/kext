@@ -38,15 +38,41 @@ class ExtAssetBuilder {
 					}
 				case "frames":
 					if(filename.indexOf(".atlas") != -1) {
-						var atlas = Json.parse(File.getContent(outputFolder + "/" + filename));
-						var frames:Array<Dynamic> = atlas.frames;
-						for(f in frames) {
+						var json = Json.parse(File.getContent(outputFolder + "/" + filename));
+						var frameList:Array<Dynamic> = json.frames;
+						for(frame in frameList) {
 							fields.push({
-								name: f.filename,
+								name: frame.filename,
 								doc: null,
 								meta: [],
 								access: [APublic],
 								kind: FVar(macro: kext.loaders.AtlasLoader.FrameData, macro null),
+								pos: Context.currentPos()
+							});
+						}
+					}
+				case "animationFiles":
+					if(filename.indexOf(".anim") != -1) {
+						fields.push({
+							name: StringTools.replace(name, "_anim", ""),
+							doc: null,
+							meta: [],
+							access: [APublic],
+							kind: FVar(macro: kext.loaders.AnimationLoader.AnimationFile, macro null),
+							pos: Context.currentPos()
+						});
+					}
+				case "animations":
+					if(filename.indexOf(".anim") != -1) {
+						var json = Json.parse(File.getContent(outputFolder + "/" + filename));
+						var animationList:Array<Dynamic> = json.animations;
+						for(anim in animationList) {
+							fields.push({
+								name: anim.name,
+								doc: null,
+								meta: [],
+								access: [APublic],
+								kind: FVar(macro: kext.loaders.AnimationLoader.AnimationData, macro null),
 								pos: Context.currentPos()
 							});
 						}

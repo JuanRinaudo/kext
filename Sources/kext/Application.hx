@@ -197,9 +197,6 @@ class Application {
 
 		Scheduler.removeTimeTask(loaderUpdateID);
 		Scheduler.addTimeTask(updatePass, options.updateStart, options.updatePeriod);
-
-		trace(kext.ExtAssets.atlas.FartResources);
-		trace(kext.ExtAssets.frames.Apple);
 		
 		currentState = Type.createInstance(options.initState, options.stateArguments);
 	}

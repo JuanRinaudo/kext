@@ -5,17 +5,20 @@ import haxe.Json;
 import kha.Assets;
 import kha.Blob;
 import kha.Image;
+import kha.math.Vector2;
 
 import kext.math.Rectangle;
 
 typedef AtlasData = {
 	image:Image,
-	frames:Map<String, Rectangle>
+	frames:Map<String, FrameData>
 }
 
 typedef FrameData = {
+	name:String,
 	image:Image,
-	rectangle:Rectangle
+	rectangle:Rectangle,
+	sourceDelta:Vector2
 }
 
 class AtlasLoader {
@@ -26,12 +29,19 @@ class AtlasLoader {
 		var imageName:String = StringTools.replace(json.meta.image, ".png", "");
 		var image:Image = Assets.images.get(imageName);
 
-		var frameMap = new Map<String, Rectangle>();
+		var frameMap = new Map<String, FrameData>();
 		var frameList:Array<Dynamic> = json.frames;
 		for(frame in frameList) {
 			var rectangle:Rectangle = rectangleFromFrame(frame.frame);
-			frameMap.set(frame.filename, rectangle);
-			Reflect.setField(ExtAssets.frames, frame.filename, {image:image, rectangle: rectangle});
+			var sourceDelta:Vector2 = new Vector2(frame.frame.w - frame.sourceSize.w, frame.frame.h - frame.sourceSize.h);
+			var frameData:FrameData = {
+				name: frame.filename,
+				image: image,
+				rectangle: rectangle,
+				sourceDelta: sourceDelta
+			};
+			frameMap.set(frame.filename, frameData);
+			Reflect.setField(ExtAssets.frames, frame.filename, frameData);
 		}
 
 		var atlas = {

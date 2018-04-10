@@ -19,15 +19,10 @@ class BoundingRect {
 	}
 	
 	public function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
-		if(vector == null) {
-			vector = new Vector2(1, 1);
-		}
+		if(vector == null) { vector = new Vector2(1, 1); }
+		if(offsetAdd == null) { offsetAdd = new Vector2(0, 0); }
 		size = new Vector2(size.x * vector.x, size.y * vector.y);
-		if(offsetAdd != null) {
-			offset = new Vector2(size.x * vector.x * 0.5 + offsetAdd.x, size.y * vector.y * 0.5 + offsetAdd.y);
-		} else {
-			offset = new Vector2(size.x * vector.x * 0.5, size.y * vector.y * 0.5);
-		}
+		offset = new Vector2(size.x * vector.x * 0.5 + offsetAdd.x, size.y * vector.y * 0.5 + offsetAdd.y);
 	}
 
 	public inline function setOffset(vector:Vector2) {
