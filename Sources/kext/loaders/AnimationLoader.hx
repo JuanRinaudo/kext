@@ -38,7 +38,7 @@ class AnimationLoader {
 				for(i in anim.from ... Math.floor(anim.to + 1)) {
 					frames.push(ExtAssets.frames.get(anim.prefix + i));
 				}
-				if(anim.yoyo) {
+				if(anim.yoyo == true) {
 					for(i in Math.floor(anim.from + 1) ... Math.floor(anim.to + 1)) {
 						frames.push(ExtAssets.frames.get(anim.prefix + (anim.to - i)));
 					}
@@ -50,7 +50,7 @@ class AnimationLoader {
 				frames: frames,
 				fps: anim.fps,
 				frameDelta: 1 / anim.fps,
-				loop: anim.loop,
+				loop: anim.loop == true,
 				length: frames.length
 			}
 			animationMap.set(anim.name, animation);

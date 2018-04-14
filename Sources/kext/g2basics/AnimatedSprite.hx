@@ -27,15 +27,17 @@ class AnimatedSprite extends BasicSprite {
 			animationTime += delta;
 			currentFrame = Math.floor(animationTime / currentAnimation.frameDelta);
 			if(currentAnimation.loop) { currentFrame = currentFrame % currentAnimation.length; }
-			else if(currentFrame == currentAnimation.length - 1) { stop(); }
-			if(currentFrame != lastFrame) {
+			
+			if(currentFrame >= currentAnimation.length) { stop(); }
+			else {
 				setFrame(currentAnimation.frames[currentFrame]);
 				lastFrame = currentFrame;
 			}
 		}
 	}
 
-	public inline function play() {
+	public inline function play(startingFrame:Int = 0) {
+		currentFrame = startingFrame;
 		running = true;
 	}
 
@@ -43,13 +45,14 @@ class AnimatedSprite extends BasicSprite {
 		running = false;
 	}
 
-	public function setAnimation(animation:AnimationData, startingFrame:Int = 0) {
+	public function setAnimation(animation:AnimationData, startingFrame:Int = 0, start:Bool = true) {
 		lastFrame = startingFrame;
 		currentFrame = startingFrame;
 		currentAnimation = animation;
 		if(animation != null) {
 			setFrame(animation.frames[currentFrame]);
 		}
+		running = start;
 	}
 
 }
