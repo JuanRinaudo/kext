@@ -1,5 +1,7 @@
 package kext.g2basics;
 
+import kha.Image;
+
 import kext.utils.Counter;
 import kext.loaders.AnimationLoader.AnimationData;
 
@@ -10,7 +12,7 @@ class AnimatedSprite extends BasicSprite {
 	private var currentAnimation:AnimationData;
 
 	private var animationTime:Float;
-	private var running:Bool;
+	private var animationRunning:Bool;
 
 	public function new(x:Float, y:Float, animation:AnimationData = null, startingFrame:Int = 0) {
 		super(x, y, null);
@@ -23,7 +25,7 @@ class AnimatedSprite extends BasicSprite {
 	override public function update(delta:Float) {
 		super.update(delta);
 
-		if(running && currentAnimation != null) {
+		if(animationRunning && currentAnimation != null) {
 			animationTime += delta;
 			currentFrame = Math.floor(animationTime / currentAnimation.frameDelta);
 			if(currentAnimation.loop) { currentFrame = currentFrame % currentAnimation.length; }
@@ -36,13 +38,17 @@ class AnimatedSprite extends BasicSprite {
 		}
 	}
 
+	// override public function render(backbuffer:Image) {
+	// 	super.render(backbuffer);
+	// }
+
 	public inline function play(startingFrame:Int = 0) {
 		currentFrame = startingFrame;
-		running = true;
+		animationRunning = true;
 	}
 
 	public inline function stop() {
-		running = false;
+		animationRunning = false;
 	}
 
 	public function setAnimation(animation:AnimationData, startingFrame:Int = 0, start:Bool = true) {
@@ -52,7 +58,7 @@ class AnimatedSprite extends BasicSprite {
 		if(animation != null) {
 			setFrame(animation.frames[currentFrame]);
 		}
-		running = start;
+		animationRunning = start;
 	}
 
 }

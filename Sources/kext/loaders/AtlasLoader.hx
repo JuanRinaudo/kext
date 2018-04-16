@@ -33,7 +33,7 @@ class AtlasLoader {
 		var frameList:Array<Dynamic> = json.frames;
 		for(frame in frameList) {
 			var rectangle:Rectangle = rectangleFromFrame(frame.frame);
-			var sourceDelta:Vector2 = new Vector2(frame.frame.w - frame.sourceSize.w, frame.frame.h - frame.sourceSize.h);
+			var sourceDelta:Vector2 = new Vector2(-frame.spriteSourceSize.x, -frame.spriteSourceSize.y);
 			var frameData:FrameData = {
 				name: frame.filename,
 				image: image,
