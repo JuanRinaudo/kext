@@ -50,6 +50,14 @@ import kext.platform.krom.Platform;
 import kext.platform.android.Platform;
 #end
 
+#if (js && !kha_krom)
+import kext.platform.html5.PlatformServices;
+#elseif kha_krom
+import kext.platform.krom.PlatformServices;
+#elseif kha_android
+import kext.platform.android.PlatformServices;
+#end
+
 using kext.UniformType;
 
 typedef ApplicationOptions = {
@@ -95,6 +103,7 @@ class Application {
 	public static var postbackbuffer:Image;
 
 	public static var platform:Platform;
+	public static var services:PlatformServices;
 
 	public static var onApplicationStart:Signal<ApplicationStartEvent> = new Signal();
 	public static var onApplicationEnd:Signal<ApplicationEndEvent> = new Signal();
@@ -164,6 +173,8 @@ class Application {
 		platform.addResizeHandler();
 		platform.addFullscreenHandler();
 
+		services = new PlatformServices();
+
 		createBuffers(options.bufferWidth, options.bufferHeight);
 
 		postProcessingPipelines = new Map();
@@ -192,6 +203,10 @@ class Application {
 	}
 
 	private function parsingCompleteHandler() {
+		services.init(serviceInitCompleted);
+	}
+
+	private function serviceInitCompleted(response:Dynamic) {
 		System.removeRenderListener(loaderRenderPass);
 		System.notifyOnRender(renderPass);
 
@@ -202,13 +217,16 @@ class Application {
 	}
 
 	private function loaderUpdatePass() {
-		
+		time += options.updatePeriod;
 	}
 
 	private function loaderRenderPass(framebuffer:Framebuffer) {
 		framebuffer.g2.begin();
 		
 		framebuffer.g2.fillRect(0, sysOptions.height * 0.4, sysOptions.width * Assets.progress, sysOptions.height * 0.2);
+		
+		var width:Float = sysOptions.width * Math.sin(time) * 0.5;
+		framebuffer.g2.fillRect(sysOptions.width * 0.5 - width, sysOptions.height * 0.6, width * 2, sysOptions.height * 0.1);
 
 		framebuffer.g2.end();
 	}
