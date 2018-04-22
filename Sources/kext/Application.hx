@@ -15,6 +15,7 @@ import kha.Scaler.TargetRectangle;
 
 import kha.math.Vector2;
 import kha.math.FastVector2;
+import kha.math.FastMatrix3;
 
 import kext.ExtAssets;
 
@@ -66,8 +67,10 @@ typedef ApplicationOptions = {
 	initState:Class<AppState>,
 	?stateArguments:Array<Dynamic>,
 	defaultFontName:String,
+	defaultFontSize:Int,
 	bufferWidth:Int,
 	bufferHeight:Int,
+	?platformServices:Bool
 }
 
 typedef PostProcessingUniform = {
@@ -99,6 +102,8 @@ class Application {
 	public static var mouse:MouseInput;
 	public static var touch:TouchInput;
 
+	public static var audio:AudioManager;
+
 	public static var backbuffer:Image;
 	public static var postbackbuffer:Image;
 
@@ -113,6 +118,7 @@ class Application {
 
 	public static var time:Float = 0;
 	public static var deltaTime(default, null):Float = 0;
+	public static var paused:Bool = false;
 
 	private static var nextID:UInt = 0;
 
@@ -122,6 +128,7 @@ class Application {
 	private static var updateCounters:Array<Counter> = [];
 
 	public static var defaultFont(default, null):Font;
+	public static var defaultFontSize:Int;
 
 	private var debug:Debug;
 
@@ -156,8 +163,10 @@ class Application {
 		if(applicationOptions.updatePeriod == null) { applicationOptions.updatePeriod = 1 / 60; }
 		if(applicationOptions.stateArguments == null) { applicationOptions.stateArguments = []; }
 		if(applicationOptions.defaultFontName == null) { applicationOptions.defaultFontName = "KenPixel"; }
+		if(applicationOptions.defaultFontSize == null) { applicationOptions.defaultFontSize = 18; }
 		if(applicationOptions.bufferWidth == null) { applicationOptions.bufferWidth = sysOptions.width; }
 		if(applicationOptions.bufferHeight == null) { applicationOptions.bufferHeight = sysOptions.height; }
+		if(applicationOptions.platformServices == null) { applicationOptions.platformServices = false; }
 		return applicationOptions;
 	}
 
@@ -169,11 +178,16 @@ class Application {
 		mouse = new MouseInput();
 		touch = new TouchInput();
 
+		audio = new AudioManager();
+
 		platform = new Platform(sysOptions);
 		platform.addResizeHandler();
 		platform.addFullscreenHandler();
+		platform.setBlurFocusHandler(pause, resume);
 
-		services = new PlatformServices();
+		if(options.platformServices) {
+			services = new PlatformServices();
+		}
 
 		createBuffers(options.bufferWidth, options.bufferHeight);
 
@@ -196,6 +210,7 @@ class Application {
 
 	private function loadCompleteHandler() {
 		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
+		defaultFontSize = options.defaultFontSize;
 		
 		ExtAssets.parseAssets(Assets.blobs.kextassets_json, parsingCompleteHandler);
 	
@@ -203,7 +218,11 @@ class Application {
 	}
 
 	private function parsingCompleteHandler() {
-		services.init(serviceInitCompleted);
+		if(options.platformServices) {
+			services.init(serviceInitCompleted);
+		} else {
+			serviceInitCompleted({});
+		}
 	}
 
 	private function serviceInitCompleted(response:Dynamic) {
@@ -256,6 +275,20 @@ class Application {
 		}
 
 		debug.render(backbuffer);
+		
+		if (paused) {
+			backbuffer.g2.begin(false);
+
+			backbuffer.g2.transformation = FastMatrix3.identity();
+			backbuffer.g2.color = Color.fromFloats(0, 0, 0, 0.5);
+			backbuffer.g2.fillRect(0, 0, width, height);
+			
+			backbuffer.g2.color = Color.fromFloats(1, 1, 1, 0.5);
+			backbuffer.g2.fillTriangle(	width * 0.33, height * 0.33,
+										width * 0.33, height * 0.66,
+										width * 0.66, height * 0.5);
+			backbuffer.g2.end();
+		}
 
 		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
 		framebuffer.g2.begin(true);
@@ -309,7 +342,7 @@ class Application {
 			counter.tick();
 		}
 
-		if(currentState != null) {
+		if(currentState != null && !paused) {
 			time += options.updatePeriod;
 			currentState.update(options.updatePeriod);
 		}
@@ -321,6 +354,8 @@ class Application {
 		keyboard.update(options.updatePeriod);
 		mouse.update(options.updatePeriod);
 		touch.update(options.updatePeriod);
+
+		audio.update(options.updatePeriod);
 	}
 
 	public static function getNextID():UInt {
@@ -369,10 +404,38 @@ class Application {
 		updateCounters.remove(counter);
 	}
 
+	public static function changeState(state:Class<AppState>, arguments:Array<Dynamic> = null) {
+		if(arguments == null) { arguments = []; }
+		var app:Application = Application.instance;
+		app.currentState.destroy();
+		app.currentState = Type.createInstance(state, arguments);
+	}
+
 	public static function reset() {
 		var app:Application = Application.instance;
 		app.currentState.destroy();
 		app.currentState = Type.createInstance(app.options.initState, app.options.stateArguments);
+	}
+	
+	public static function pause():Void {
+		if(audio != null) {
+			audio.pauseAll();
+		}
+		
+		if(gamepad != null) { gamepad.clearInput(); }
+		if(keyboard != null) { keyboard.clearInput(); }
+		if(mouse != null) { mouse.clearInput(); }
+		if(touch != null) { touch.clearInput(); }
+		
+		paused = true;
+	}
+	
+	public static function resume():Void {
+		if(audio != null) {
+			audio.resumeAll();
+		}
+		
+		paused = false;
 	}
 
 }

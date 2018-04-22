@@ -17,7 +17,7 @@ class Text extends Basic {
 	public var height:Float;
 	
 	public var text(default, set):String = "";
-	public var fontSize:Int = 12;
+	public var fontSize:Int;
 	public var font:Font;
 
 	public var color:Color;
@@ -42,6 +42,7 @@ class Text extends Basic {
 		verticalTextAlign = MIDDLE;
 
 		font = Application.defaultFont;
+		fontSize = Application.defaultFontSize;
 		text = label;
 
 		color = Color.White;
@@ -56,14 +57,14 @@ class Text extends Basic {
 	override public function render(backbuffer:Image) {
 		var i = 0;
 		for(line in textLines) {
-			transform._20 = position.x + offsetByLine[i].x;
-			transform._21 = position.y + offsetByLine[i].y;
+			transform._20 = position.x + offsetByLine[i].x - width * 0.5;
+			transform._21 = position.y + offsetByLine[i].y - height * 0.5;
 
 			backbuffer.g2.transformation = transform;
 			backbuffer.g2.font = font;
 			backbuffer.g2.fontSize = fontSize;
 			backbuffer.g2.color = color;
-			backbuffer.g2.drawString(text, 0, 0);
+			backbuffer.g2.drawString(line, 0, 0);
 			i++;
 		}
 	}
@@ -92,7 +93,7 @@ class Text extends Basic {
 				case TOP:
 					y += 0;
 				case MIDDLE:
-					y += (height - fontSize) / 2;
+					y += (height - fontSize * textLines.length) / 2;
 				case BOTTOM:
 					y += height - fontSize * textLines.length;
 			}

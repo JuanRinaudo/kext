@@ -78,6 +78,13 @@ class Platform implements IPlatform {
 		}
 	}
 
+	public function setBlurFocusHandler(pause:Void -> Void, resume:Void -> Void) {
+		Browser.window.onblur = pause;
+		Browser.window.onfocus = resume;
+		canvas.onblur = pause;
+		canvas.onfocus = resume;
+	}
+
 	private static inline function checkDesktop() {
 		return !checkMobile();
 	}

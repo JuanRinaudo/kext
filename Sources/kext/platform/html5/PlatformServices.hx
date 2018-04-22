@@ -82,7 +82,7 @@ class PlatformServices implements IPlatformServices {
 	}
 
 	public function submitScore(id:String, value:Dynamic, callback:ServiceResponse) {
-		var request = GApiScores.submit(leaderboardId: id, score: value);
+		var request = GApiScores.submit({leaderboardId: id, score: value});
 		request.execute(callback);
 	}
 

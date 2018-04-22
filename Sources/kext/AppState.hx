@@ -3,6 +3,7 @@ package kext;
 import kha.Assets;
 import kha.Image;
 import kha.Color;
+import kha.math.FastMatrix3;
 
 import kext.g4basics.BasicMesh;
 
@@ -17,6 +18,14 @@ class AppState extends Basic {
 		super();
 
 		createZUI();
+	}
+
+	private inline function beginAndClear2D(backbuffer:Image, clearColor:Color = null) {
+		backbuffer.g2.begin(clearColor != null, clearColor);
+	}
+
+	private inline function clearTransformation2D(backbuffer:Image) {
+		backbuffer.g2.transformation = FastMatrix3.identity();
 	}
 
 	private inline function beginAndClear(backbuffer:Image, clearColor:Color = null) {
