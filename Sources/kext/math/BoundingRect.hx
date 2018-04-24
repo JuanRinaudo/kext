@@ -19,6 +19,7 @@ class BoundingRect {
 
 	public function checkVectorOverlap(vector:Vector2) {
 		var offset:Vector2 = this.offset != null ? this.offset : transform.origin;
+		offset = new Vector2(offset.x * transform.scaleX, offset.y * transform.scaleY);
 		var tv1:Vector2 = transform.position.sub(offset);
 		var tv2:Vector2 = transform.position.sub(offset);
 		tv2.x += size.x * transform.scaleX;
@@ -31,11 +32,13 @@ class BoundingRect {
 
 	public function checkRectOverlap(rect:BoundingRect) {
 		var offset:Vector2 = this.offset != null ? this.offset : transform.origin;
+		offset = new Vector2(offset.x * transform.scaleX, offset.y * transform.scaleY);
 		var tv1:Vector2 = transform.position.sub(offset);
 		var tv2:Vector2 = transform.position.sub(offset);
 		tv2.x += size.x * transform.scaleX;
 		tv2.y += size.y * transform.scaleY;
 		offset = rect.offset != null ? rect.offset : rect.transform.origin;
+		offset = new Vector2(offset.x * rect.transform.scaleX, offset.y * rect.transform.scaleY);
 		var recttv1:Vector2 = rect.transform.position.sub(offset);
 		var recttv2:Vector2 = rect.transform.position.sub(offset);
 		recttv2.x += rect.size.x * rect.transform.scaleX;

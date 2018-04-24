@@ -94,24 +94,24 @@ class Debug extends Basic {
 	public static var originColor:Color = Color.fromFloats(0, 0, 1, 0.8);
 	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color = null) {
 		if(debugOn) {
+			backbuffer.g2.color = originColor;
+			backbuffer.g2.transformation = bounds.transform.getMatrix().mult(1);
+			backbuffer.g2.transformation._20 += bounds.transform.originX * bounds.transform.scale.x;
+			backbuffer.g2.transformation._21 += bounds.transform.originY * bounds.transform.scale.y;
+			backbuffer.g2.fillRect(-1, -1, 2, 2);
+
 			backbuffer.g2.color = color != null ? color : boundsColor;
 			if(color == null && bounds.checkVectorOverlap(kext.Application.mouse.position)) {
 				backbuffer.g2.color = boundsOverlapColor;
 			}
 			if(bounds.offset != null) {
-				backbuffer.g2.transformation = bounds.transform.getMatrix().mult(1);
-				backbuffer.g2.transformation._20 += bounds.transform.originX - bounds.offset.x;
-				backbuffer.g2.transformation._21 += bounds.transform.originY - bounds.offset.y;
+				backbuffer.g2.transformation._20 -= bounds.offset.x * bounds.transform.scale.x;
+				backbuffer.g2.transformation._21 -= bounds.offset.y * bounds.transform.scale.y;
 				backbuffer.g2.fillRect(0, 0, bounds.size.x, bounds.size.y);
 			} else {
 				backbuffer.g2.transformation = bounds.transform.getMatrix();
 				backbuffer.g2.fillRect(0, 0, bounds.size.x, bounds.size.y);
 			}
-			backbuffer.g2.color = originColor;
-			backbuffer.g2.transformation = bounds.transform.getMatrix().mult(1);
-			backbuffer.g2.transformation._20 += bounds.transform.originX;
-			backbuffer.g2.transformation._21 += bounds.transform.originY;
-			backbuffer.g2.fillRect(-1, -1, 2, 2);
 		}
 	}
 
