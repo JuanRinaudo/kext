@@ -28,9 +28,17 @@ class AppState extends Basic {
 		backbuffer.g2.transformation = FastMatrix3.identity();
 	}
 
-	private inline function beginAndClear(backbuffer:Image, clearColor:Color = null) {
+	private inline function end2D(backbuffer:Image) {
+		backbuffer.g2.end();
+	}
+
+	private inline function beginAndClear3D(backbuffer:Image, clearColor:Color = null) {
 		backbuffer.g4.begin();
 		backbuffer.g4.clear(clearColor != null ? clearColor : Color.Black, Math.POSITIVE_INFINITY);
+	}
+
+	private inline function end3D(backbuffer:Image) {
+		backbuffer.g4.end();
 	}
 
 	private function createZUI() {

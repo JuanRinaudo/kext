@@ -39,15 +39,15 @@ class MouseInput extends Basic
 	public var x(get, null):Float;
 	public var y(get, null):Float;
 	
-	public var mousePosition(get, null):Vector2;
-	public var mousePosDelta(get, null):Vector2;
-	private var _mousePosition:Vector2 = new Vector2();
-	private var _mousePosDelta:Vector2 = new Vector2();
+	public var position(get, null):Vector2;
+	public var posDelta(get, null):Vector2;
+	private var _position:Vector2 = new Vector2();
+	private var _posDelta:Vector2 = new Vector2();
 	
-	public var onMousePressed:Signal<MousePressedEvent> = new Signal();
-	public var onMouseReleased:Signal<MouseReleasedEvent> = new Signal();
-	public var onMouseMove:Signal<MouseMoveEvent> = new Signal();
-	public var onMouseWheel:Signal<MouseWheelEvent> = new Signal();
+	public var onPressed:Signal<MousePressedEvent> = new Signal();
+	public var onReleased:Signal<MouseReleasedEvent> = new Signal();
+	public var onMove:Signal<MouseMoveEvent> = new Signal();
+	public var onWheelChange:Signal<MouseWheelEvent> = new Signal();
 	
 	public var mouseWheel(get, null):Int;
 
@@ -67,38 +67,38 @@ class MouseInput extends Basic
 	
 	private function mouseDownListener(index:Int, x:Int, y:Int) {
 		var gamePosition:Vector2 = Application.screenToGamePosition(new Vector2(x, y));
-		_mousePosition.x = gamePosition.x;
-		_mousePosition.y = gamePosition.y;
-		_mousePosDelta.x = 0;
-		_mousePosDelta.y = 0;
+		_position.x = gamePosition.x;
+		_position.y = gamePosition.y;
+		_posDelta.x = 0;
+		_posDelta.y = 0;
 		buttonData.set(index, PRESSED);
 		pressedQueue.push(index);
-		onMousePressed.dispatch({index: index, x: x, y: y});
+		onPressed.dispatch({index: index, x: x, y: y});
 	}
 	
 	private function mouseUpListener(index:Int, x:Int, y:Int) {
 		var gamePosition:Vector2 = Application.screenToGamePosition(new Vector2(x, y));
-		_mousePosition.x = gamePosition.x;
-		_mousePosition.y = gamePosition.y;
-		_mousePosDelta.x = 0;
-		_mousePosDelta.y = 0;
+		_position.x = gamePosition.x;
+		_position.y = gamePosition.y;
+		_posDelta.x = 0;
+		_posDelta.y = 0;
 		buttonData.set(index, RELEASED);
 		releasedQueue.push(index);
-		onMouseReleased.dispatch({index: index, x: x, y: y});
+		onReleased.dispatch({index: index, x: x, y: y});
 	}
 	
 	private function mouseMoveListener(x:Int, y:Int, deltaX:Int, deltaY:Int) {
 		var gamePosition:Vector2 = Application.screenToGamePosition(new Vector2(x, y));
-		_mousePosition.x = gamePosition.x;
-		_mousePosition.y = gamePosition.y;
-		_mousePosDelta.x = deltaX;
-		_mousePosDelta.y = deltaY;
-		onMouseMove.dispatch({x: x, y: y, deltaX: deltaX, deltaY: deltaY});
+		_position.x = gamePosition.x;
+		_position.y = gamePosition.y;
+		_posDelta.x = deltaX;
+		_posDelta.y = deltaY;
+		onMove.dispatch({x: x, y: y, deltaX: deltaX, deltaY: deltaY});
 	}
 	
 	private function mouseWheelListener(delta:Int) {
 		mouseWheel = delta;
-		onMouseWheel.dispatch({delta: delta});
+		onWheelChange.dispatch({delta: delta});
 	}
 	
 	public function buttonDown(buttonValue:Int):Bool {
@@ -139,19 +139,19 @@ class MouseInput extends Basic
 	}
 	
 	public function get_x():Float {
-		return _mousePosition.x;
+		return _position.x;
 	}
 
 	public function get_y():Float {
-		return _mousePosition.y;
+		return _position.y;
 	}
 
-	public function get_mousePosition():Vector2 {
-		return new Vector2(_mousePosition.x, _mousePosition.y);
+	public function get_position():Vector2 {
+		return new Vector2(_position.x, _position.y);
 	}
 
-	public function get_mousePosDelta():Vector2 {
-		return new Vector2(_mousePosDelta.x, _mousePosDelta.y);
+	public function get_posDelta():Vector2 {
+		return new Vector2(_posDelta.x, _posDelta.y);
 	}
 	
 	public function get_mouseWheel():Int {

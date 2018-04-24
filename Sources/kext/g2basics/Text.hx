@@ -5,14 +5,14 @@ import kha.Image;
 import kha.Font;
 
 import kha.math.Vector2;
-import kha.math.FastMatrix3;
 
 using Alignment.HorizontalAlign;
 using Alignment.VerticalAlign;
 
 class Text extends Basic {
 
-	public var position:Vector2;
+	public var transform:Transform2D;
+
 	public var width:Float;
 	public var height:Float;
 	
@@ -22,32 +22,28 @@ class Text extends Basic {
 
 	public var color:Color;
 
-	private var transform:FastMatrix3;
-
 	private var textLines:Array<String>;
 	private var offsetByLine:Array<Vector2>;
 
-	public var horizontalTextAlign:HorizontalAlign;
-	public var verticalTextAlign:VerticalAlign;
+	public var horizontalAlign:HorizontalAlign;
+	public var verticalAlign:VerticalAlign;
 
-	public function new(x:Float, y:Float, areaWidth:Float, areaHeight:Float, label:String = "") {
+	public function new(x:Float = 0, y:Float = 0, areaWidth:Float = 0, areaHeight:Float = 0, label:String = "") {
 		super();
 
-		position = new Vector2(x, y);
+		transform = Transform2D.fromFloats(x, y);
 
 		width = areaWidth;
 		height = areaHeight;
 
-		horizontalTextAlign = MIDDLE;
-		verticalTextAlign = MIDDLE;
+		horizontalAlign = MIDDLE;
+		verticalAlign = MIDDLE;
 
 		font = Application.defaultFont;
 		fontSize = Application.defaultFontSize;
 		text = label;
 
 		color = Color.White;
-
-		transform = FastMatrix3.identity();
 	}
 
 	override public function update(delta:Float) {
@@ -55,16 +51,14 @@ class Text extends Basic {
 	}
 
 	override public function render(backbuffer:Image) {
+		backbuffer.g2.transformation = transform.getMatrix();
+		backbuffer.g2.font = font;
+		backbuffer.g2.fontSize = fontSize;
+		backbuffer.g2.color = color;
+
 		var i = 0;
 		for(line in textLines) {
-			transform._20 = position.x + offsetByLine[i].x - width * 0.5;
-			transform._21 = position.y + offsetByLine[i].y - height * 0.5;
-
-			backbuffer.g2.transformation = transform;
-			backbuffer.g2.font = font;
-			backbuffer.g2.fontSize = fontSize;
-			backbuffer.g2.color = color;
-			backbuffer.g2.drawString(line, 0, 0);
+			backbuffer.g2.drawString(line, offsetByLine[i].x - width * 0.5, offsetByLine[i].y - height * 0.5);
 			i++;
 		}
 	}
@@ -81,7 +75,7 @@ class Text extends Basic {
 		for(line in textLines) {
 			lineWidth = font.width(fontSize, line);
 			y = fontSize * i;
-			switch(horizontalTextAlign) {
+			switch(horizontalAlign) {
 				case LEFT:
 					x = 0;
 				case MIDDLE:
@@ -89,7 +83,7 @@ class Text extends Basic {
 				case RIGHT:
 					x = width - lineWidth;
 			}
-			switch(verticalTextAlign) {
+			switch(verticalAlign) {
 				case TOP:
 					y += 0;
 				case MIDDLE:
@@ -102,6 +96,28 @@ class Text extends Basic {
 		}
 		
 		return text;
+	}
+
+	private static var cachedText:Text = null;
+	public static function renderText(backbuffer:Image, text:String,
+	  x:Float = 0, y:Float = 0, width:Float = 0, height:Float = 0,
+	  font:Font = null, fontSize:Int = -1,
+	  horizontalAlign:HorizontalAlign = null, verticalAlign:VerticalAlign = null) {	
+		if(cachedText == null) { cachedText = new Text(); }
+
+		cachedText.transform.x = x;
+		cachedText.transform.y = y;
+		cachedText.width = width;
+		cachedText.height = height;
+
+		cachedText.text = text;
+		if(font != null) { cachedText.font = font; }
+		if(fontSize > 0) { cachedText.fontSize = fontSize; }
+
+		if(horizontalAlign != null) { cachedText.horizontalAlign = horizontalAlign; }
+		if(verticalAlign != null) { cachedText.verticalAlign = verticalAlign; }
+
+		cachedText.render(backbuffer);
 	}
 
 }

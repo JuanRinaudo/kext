@@ -2,38 +2,27 @@ package kext.math;
 
 import kha.math.Vector2;
 
+import kext.g2basics.Transform2D;
 import kext.g2basics.BasicSprite;
 
 class BoundingRect {
 
-	public var position:Vector2;
-	public var offset:Vector2;
+	public var transform:Transform2D;
 	public var size:Vector2;
-	public var scale:Vector2;
+	public var offset:Vector2;
 
-	public inline function new(boxPosition:Vector2, boxSize:Vector2, boxOffset:Vector2 = null, boxScale:Vector2 = null) {
-		position = boxPosition;
-		size = boxSize;
-		offset = boxOffset == null ? new Vector2(0, 0) : boxOffset;
-		scale = boxScale == null ? new Vector2(1, 1) : boxScale;
-	}
-	
-	public function setScaleFromCenter(vector:Vector2 = null, offsetAdd:Vector2 = null) {
-		if(vector == null) { vector = new Vector2(1, 1); }
-		if(offsetAdd == null) { offsetAdd = new Vector2(0, 0); }
-		size = new Vector2(size.x * scale.x * vector.x, size.y * scale.y * vector.y);
-		offset = new Vector2(size.x * scale.x * vector.x * 0.5 + offsetAdd.x, size.y * scale.y * vector.y * 0.5 + offsetAdd.y);
-	}
-
-	public inline function setOffset(vector:Vector2) {
-		offset = vector;
+	public inline function new(transform:Transform2D, size:Vector2 = null) {
+		this.transform = transform;
+		this.size = size;
+		offset = null;
 	}
 
 	public function checkVectorOverlap(vector:Vector2) {
-		var tv1:Vector2 = position.sub(offset);
-		var tv2:Vector2 = position.sub(offset);
-		tv2.x += size.x * scale.x;
-		tv2.y += size.y * scale.y;
+		var offset:Vector2 = this.offset != null ? this.offset : transform.origin;
+		var tv1:Vector2 = transform.position.sub(offset);
+		var tv2:Vector2 = transform.position.sub(offset);
+		tv2.x += size.x * transform.scaleX;
+		tv2.y += size.y * transform.scaleY;
 		if(vector.x < tv1.x || vector.x > tv2.x) { return false; }
 		if(vector.y < tv1.y || vector.y > tv2.y) { return false; }
 		
@@ -41,14 +30,16 @@ class BoundingRect {
 	}
 
 	public function checkRectOverlap(rect:BoundingRect) {
-		var tv1:Vector2 = position.sub(offset);
-		var tv2:Vector2 = position.sub(offset);
-		tv2.x += size.x * scale.x;
-		tv2.y += size.y * scale.y;
-		var recttv1:Vector2 = rect.position.sub(rect.offset);
-		var recttv2:Vector2 = rect.position.sub(rect.offset);
-		recttv2.x += rect.size.x * rect.scale.x;
-		recttv2.y += rect.size.y * rect.scale.y;
+		var offset:Vector2 = this.offset != null ? this.offset : transform.origin;
+		var tv1:Vector2 = transform.position.sub(offset);
+		var tv2:Vector2 = transform.position.sub(offset);
+		tv2.x += size.x * transform.scaleX;
+		tv2.y += size.y * transform.scaleY;
+		offset = rect.offset != null ? rect.offset : rect.transform.origin;
+		var recttv1:Vector2 = rect.transform.position.sub(offset);
+		var recttv2:Vector2 = rect.transform.position.sub(offset);
+		recttv2.x += rect.size.x * rect.transform.scaleX;
+		recttv2.y += rect.size.y * rect.transform.scaleY;
 		if(tv1.x > recttv2.x) return false;
 		if(tv1.y > recttv2.y) return false;
 		if(tv2.x < recttv1.x) return false;
@@ -58,7 +49,12 @@ class BoundingRect {
 	}
 
 	public static function fromSprite(sprite:BasicSprite):BoundingRect {
-		var bounds = new BoundingRect(sprite.position, sprite.box, sprite.origin, sprite.scale);
+		var bounds = new BoundingRect(sprite.transform, sprite.box);
+		return bounds;
+	}
+
+	public static function fromVectors(position:Vector2, scale:Vector2, size:Vector2, origin:Vector2):BoundingRect {
+		var bounds = new BoundingRect(new Transform2D(position, scale, 0, origin), size);
 		return bounds;
 	}
 

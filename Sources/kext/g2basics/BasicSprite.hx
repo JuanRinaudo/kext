@@ -1,12 +1,9 @@
 package kext.g2basics;
 
-import kext.Application;
-
 import kha.Color;
 import kha.Image;
 
 import kha.math.Vector2;
-import kha.math.FastMatrix3;
 
 import kext.math.Rectangle;
 import kext.math.BoundingRect;
@@ -15,16 +12,12 @@ import kext.loaders.AtlasLoader.FrameData;
 
 class BasicSprite extends Basic {
 
-	public var position:Vector2;
-	public var scale:Vector2;
-	public var rotation:Float;
+	public var transform:Transform2D;
 
-	public var origin:Vector2;
 	public var bounds:BoundingRect;
 
 	public var box:Vector2;
 
-	private var transform:FastMatrix3;
 	public var image:Image;
 	public var subimage:Rectangle;
 	public var frame:FrameData;
@@ -36,16 +29,11 @@ class BasicSprite extends Basic {
 	public function new(x:Float, y:Float, spriteImage:Image) {
 		super();
 
-		position = new Vector2(x, y);
-		scale = new Vector2(1, 1);
-		rotation = 0;
+		transform = Transform2D.fromFloats(x, y, 1, 1, 0);
 
-		transform = FastMatrix3.identity();
 		image = spriteImage;
 		subimage = null;
 		frame = null;
-
-		origin = new Vector2(0, 0);
 		
 		if(image != null) {
 			box = new Vector2(image.width, image.height);
@@ -63,13 +51,8 @@ class BasicSprite extends Basic {
 
 	override public function render(backbuffer:Image) {
 		backbuffer.g2.color = color;
+		backbuffer.g2.transformation = transform.getMatrix();
 
-		transform._00 = scale.x;
-		transform._11 = scale.y;
-		transform._20 = position.x - origin.x * scale.x;
-		transform._21 = position.y - origin.y * scale.y;
-
-		backbuffer.g2.transformation = transform;
 		if(subimage != null) {
 			backbuffer.g2.drawSubImage(image, 0, 0, subimage.x, subimage.y, subimage.width, subimage.height);
 		} else {
@@ -88,14 +71,9 @@ class BasicSprite extends Basic {
 	public function setSubimageRectangle(rectangle:Rectangle, sourceDelta:Vector2 = null) {
 		frame = null;
 		subimage = rectangle;
-		if(sourceDelta != null) {
-			box.x = rectangle.width + sourceDelta.x;
-			box.y = rectangle.height + sourceDelta.y;
-		} else {
-			box.x = rectangle.width;
-			box.y = rectangle.height;
-		}
-		centerOrigin();
+		box.x = rectangle.width;
+		box.y = rectangle.height;
+		centerOrigin(sourceDelta);
 	}
 
 	public inline function setFrame(frame:FrameData) {
@@ -104,9 +82,10 @@ class BasicSprite extends Basic {
 		this.frame = frame;
 	}
 
-	public function centerOrigin() {
-		origin.x = box.x * 0.5;
-		origin.y = box.y * 0.5;
+	public function centerOrigin(offset:Vector2 = null) {
+		if(offset == null) { offset = new Vector2(0, 0); }
+		transform.originX = box.x * 0.5 + offset.x * 0.5;
+		transform.originY = box.y * 0.5 + offset.y * 0.5;
 	}
 
 	public function getScaleToSize(width:Float, height:Float) {

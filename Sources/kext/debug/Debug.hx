@@ -22,8 +22,6 @@ class Debug extends Basic {
 	private static var cube:BasicMesh;
 	private static var cubeBound:BasicMesh;
 
-	public static var boundsColor:Color = Color.Green;
-
 	public function new() {
 		super();
 
@@ -91,17 +89,29 @@ class Debug extends Basic {
 		}
 	}
 
+	public static var boundsColor:Color = Color.fromFloats(0, 1, 0, 0.25);
+	public static var boundsOverlapColor:Color = Color.fromFloats(1, 0, 0, 0.25);
+	public static var originColor:Color = Color.fromFloats(0, 0, 1, 0.8);
 	public static function drawBounds(backbuffer:Image, bounds:BoundingRect, color:Color = null) {
 		if(debugOn) {
 			backbuffer.g2.color = color != null ? color : boundsColor;
-			backbuffer.g2.transformation._00 = 1;
-			backbuffer.g2.transformation._11 = 1;
-			backbuffer.g2.transformation._20 = bounds.position.x - bounds.offset.x;
-			backbuffer.g2.transformation._21 = bounds.position.y - bounds.offset.y;
-			if(bounds.checkVectorOverlap(kext.Application.mouse.mousePosition)) {
-				backbuffer.g2.color = Color.Red;
+			if(color == null && bounds.checkVectorOverlap(kext.Application.mouse.position)) {
+				backbuffer.g2.color = boundsOverlapColor;
 			}
-			backbuffer.g2.drawRect(0, 0, bounds.size.x * bounds.scale.x, bounds.size.y * bounds.scale.y);
+			if(bounds.offset != null) {
+				backbuffer.g2.transformation = bounds.transform.getMatrix().mult(1);
+				backbuffer.g2.transformation._20 += bounds.transform.originX - bounds.offset.x;
+				backbuffer.g2.transformation._21 += bounds.transform.originY - bounds.offset.y;
+				backbuffer.g2.fillRect(0, 0, bounds.size.x, bounds.size.y);
+			} else {
+				backbuffer.g2.transformation = bounds.transform.getMatrix();
+				backbuffer.g2.fillRect(0, 0, bounds.size.x, bounds.size.y);
+			}
+			backbuffer.g2.color = originColor;
+			backbuffer.g2.transformation = bounds.transform.getMatrix().mult(1);
+			backbuffer.g2.transformation._20 += bounds.transform.originX;
+			backbuffer.g2.transformation._21 += bounds.transform.originY;
+			backbuffer.g2.fillRect(-1, -1, 2, 2);
 		}
 	}
 
