@@ -46,6 +46,11 @@ class Text extends Basic {
 		color = Color.White;
 	}
 
+	public function setOrigin(x:Float, y:Float) {
+		transform.originX = width * x;
+		transform.originY = height * y;
+	}
+
 	override public function update(delta:Float) {
 		
 	}
@@ -58,7 +63,7 @@ class Text extends Basic {
 
 		var i = 0;
 		for(line in textLines) {
-			backbuffer.g2.drawString(line, offsetByLine[i].x - width * 0.5, offsetByLine[i].y - height * 0.5);
+			backbuffer.g2.drawString(line, offsetByLine[i].x, offsetByLine[i].y);
 			i++;
 		}
 	}

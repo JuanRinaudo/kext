@@ -16,9 +16,10 @@ abstract Collection(String) {
 }
 
 typedef GApiCallback = Dynamic -> Void;
-extern class GApiRequest {
-	public function execute(callback:GApiCallback):Void;
-	public function then(onFulfilled:GApiCallback, ?onRejected:GApiCallback, ?context:Dynamic):Void;
+typedef GApiCallbackRejected = Dynamic -> Void;
+extern class GApiRequest<T> {
+	public function execute(callback:T):Void;
+	public function then(onFulfilled:T, ?onRejected:GApiCallbackRejected, ?context:Dynamic):Void;
 }
 
 @:native("gapi") extern class GApi {
@@ -30,7 +31,7 @@ typedef AuthInitParams = {
 }
 
 @:native("gapi.auth2") extern class GApiAuth2 {
-	public static function init(params:AuthInitParams):GApiRequest;
+	public static function init(params:AuthInitParams):GApiRequest<GApiCallback>;
 }
 
 @:native("gapi.client") extern class GApiClient {
@@ -87,27 +88,89 @@ typedef SubmitScoreParameters = {
 // }
 
 @:native("gapi.client.games.scores") extern class GApiScores {
-	public static function get(params:GetScoreParameters):GApiRequest;
-	public static function list(params:ListScoreParameters):GApiRequest;
-	public static function listWindow(params:ListWindowScoreParameters):GApiRequest;
-	public static function submit(params:SubmitScoreParameters):GApiRequest;
+	public static function get(params:GetScoreParameters):GApiRequest<GApiCallback>;
+	public static function list(params:ListScoreParameters):GApiRequest<GApiCallback>;
+	public static function listWindow(params:ListWindowScoreParameters):GApiRequest<GApiCallback>;
+	public static function submit(params:SubmitScoreParameters):GApiRequest<GApiCallback>;
 	// public static function submitMultiple(params:):GApiRequest;
 }
 
 typedef GetLeaderboardsParameters = {
 	leaderboardId:String,
-	consistencyToken:Int,
-	language:String
+	?consistencyToken:Int,
+	?language:String
 }
 
 typedef ListLeaderboardsParameters = {
-	consistencyToken:Int,
-	language:String,
-	maxResults:Int,
-	pageToken:String
+	?consistencyToken:Int,
+	?language:String,
+	?maxResults:Int,
+	?pageToken:String
+}
+
+typedef LeaderboardEntry = {
+	formattedScore:String,
+	formattedScoreRank:String,
+	kind:String,
+	player:Player,
+	scoreRank:String,
+	scoreValue:String,
+	timeSpan:String,
+	writeTimestampMillis:String,
+}
+
+typedef Player = {
+	bannerUrlLandscape:String,
+	bannerUrlPortrait:String,
+	displayName:String,
+	experienceInfo:ExperienceInfo,
+	kind:String,
+	playerId:String,
+	profileSettings:ProfileSettings,
+	title:String
+}
+
+typedef ExperienceInfo = {
+	currentExperiencePoints:String,
+	currentLevel:PlayerLevel,
+	kind:String,
+	nextLevel:PlayerLevel,
+}
+
+typedef PlayerLevel = {
+	kind:String,
+	level: Int,
+	minExperiencePoints: String,
+	maxExperiencePoints: String
+}
+
+typedef ProfileSettings = {
+	kind:String, 
+	profileVisible:Bool
+}
+
+typedef LeaderboardGetResponse = {
+	items:Array<LeaderboardEntry>,
+	kind:String,
+	numScores:Int,
+	playerScore:LeaderboardEntry,
+}
+
+typedef Leaderboard = {
+	iconUrl:String,
+	id:String,
+	isIconUrlDefault:Bool,
+	kind:String,
+	name:String,
+	order:String
+}
+
+typedef LeaderboardListResponse = {
+	items:Array<Leaderboard>,
+	kind:String
 }
 
 @:native("gapi.client.games.leaderboards") extern class GApiLeaderboards {
-	public static function get(params:GetLeaderboardsParameters):GApiRequest;
-	public static function list(params:ListLeaderboardsParameters):GApiRequest;
+	public static function get(params:GetLeaderboardsParameters):GApiRequest<LeaderboardGetResponse>;
+	public static function list(params:ListLeaderboardsParameters):GApiRequest<LeaderboardListResponse>;
 }

@@ -67,7 +67,7 @@ typedef ApplicationOptions = {
 	initState:Class<AppState>,
 	?stateArguments:Array<Dynamic>,
 	defaultFontName:String,
-	defaultFontSize:Int,
+	?defaultFontSize:Int,
 	bufferWidth:Int,
 	bufferHeight:Int,
 	?platformServices:Bool
@@ -240,13 +240,17 @@ class Application {
 	}
 
 	private function loaderRenderPass(framebuffer:Framebuffer) {
-		framebuffer.g2.begin();
+		backbuffer.g2.begin(true);
 		
-		framebuffer.g2.fillRect(0, sysOptions.height * 0.4, sysOptions.width * Assets.progress, sysOptions.height * 0.2);
+		backbuffer.g2.fillRect(0, height * 0.4, width * Assets.progress, height * 0.2);
 		
-		var width:Float = sysOptions.width * Math.sin(time) * 0.5;
-		framebuffer.g2.fillRect(sysOptions.width * 0.5 - width, sysOptions.height * 0.6, width * 2, sysOptions.height * 0.1);
+		var barWidth:Float = width * (Math.cos(time) + 1) * 0.25;
+		backbuffer.g2.fillRect(width * 0.5 - barWidth, height * 0.6, barWidth * 2, height * 0.1);
+		backbuffer.g2.end();
 
+		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
+		framebuffer.g2.begin(true);
+		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
 	}
 
@@ -295,7 +299,9 @@ class Application {
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
 
-		currentState.renderFramebuffer(framebuffer);
+		if(currentState != null) {
+			currentState.renderFramebuffer(framebuffer);
+		}
 	}
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {
@@ -415,6 +421,13 @@ class Application {
 		var app:Application = Application.instance;
 		app.currentState.destroy();
 		app.currentState = Type.createInstance(app.options.initState, app.options.stateArguments);
+	}
+	
+	public static function resetState() {
+		var app:Application = Application.instance;
+		var state = Type.getClass(app.currentState);
+		app.currentState.destroy();
+		app.currentState = Type.createInstance(state, []);
 	}
 	
 	public static function pause():Void {
