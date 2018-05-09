@@ -24,8 +24,8 @@ class Countdown {
 		return currentValue != 0;
 	}
 
-	public inline function start() {
-		currentValue = targetValue;
+	public inline function start(forceValue:Float = -1) {
+		currentValue = (forceValue == -1) ? targetValue : forceValue;
 	}
 
 	public inline function end() {

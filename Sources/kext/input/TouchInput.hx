@@ -82,21 +82,21 @@ class TouchInput extends Basic
 		onTouchMove.dispatch({index: index, x: gamePosition.x, y: gamePosition.y, deltaX: deltaX, deltaY: deltaY});
 	}
 	
-	public function touchDown(touchValue:Int):Bool {
+	public function touchDown(touchValue:Int = 0):Bool {
 		var state:InputState = touchData.get(touchValue);
 		return state == DOWN || state == PRESSED;
 	}
 	
-	public function touchUp(touchValue:Int):Bool {
+	public function touchUp(touchValue:Int = 0):Bool {
 		var state:InputState = touchData.get(touchValue);
 		return state == UP || state == RELEASED;
 	}
 	
-	public function touchPressed(touchValue:Int):Bool {
+	public function touchPressed(touchValue:Int = 0):Bool {
 		return touchData.get(touchValue) == PRESSED;
 	}
 	
-	public function touchReleased(touchValue:Int):Bool {
+	public function touchReleased(touchValue:Int = 0):Bool {
 		return touchData.get(touchValue) == RELEASED;
 	}
 	

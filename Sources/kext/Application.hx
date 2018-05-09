@@ -68,8 +68,8 @@ typedef ApplicationOptions = {
 	?stateArguments:Array<Dynamic>,
 	defaultFontName:String,
 	?defaultFontSize:Int,
-	bufferWidth:Int,
-	bufferHeight:Int,
+	?bufferWidth:Int,
+	?bufferHeight:Int,
 	?platformServices:Bool
 }
 

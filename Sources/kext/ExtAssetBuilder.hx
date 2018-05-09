@@ -18,7 +18,11 @@ class ExtAssetBuilder {
 
 		var outputFolder = Compiler.getOutput();
 		outputFolder = outputFolder.replace("\\", "/");
+		#if kha_android
+		outputFolder += ("/app/src/main/assets");
+		#else
 		outputFolder = outputFolder.substring(0, outputFolder.lastIndexOf("/"));
+		#end
 
 		for (file in files) {
 			var name:String = file.name;

@@ -1,75 +1,61 @@
-package kext.platform.html5;
+package kext.platform.android;
 
+import kext.platform.android.GoogleService;
 import kext.platform.IPlatformServices;
-import kext.platform.html5.GApi;
 
-import js.Browser;
-import js.html.Element;
+import com.ktxsoftware.kha.KhaActivity;
+
+import android.content.Intent;
+
+typedef Callback = Void -> Void;
 
 class PlatformServices implements IPlatformServices {
 
 	public var serviceInited:Bool;
 	public var isSignedIn(get, null):Bool;
 
-	public var auth2:Dynamic;
-
-	private var loggingButton:Element;
-
-	private var initCallback:GApiCallback;
-	private var signInCallback:ServiceResponse;
+	private var initCallback:GoogleServiceCallback;
+	private var signInCallback:GoogleServiceCallback;
 
 	public function new() {
 
 	}
 
-	private inline function loadScript(source:String, onLoadCallback:Void -> Void) {
-		var script = Browser.document.createScriptElement();
-		script.setAttribute("type", "text/javascript");
-		script.setAttribute("src", source);
-		script.onload = onLoadCallback;
-		Browser.document.body.appendChild(script);
-	}
-
-	public function init(initCallback:GApiCallback) {
+	public function init(initCallback:GoogleServiceCallback) {
 		this.initCallback = initCallback;
-
-		loadScript("https://apis.google.com/js/client.js", loadClient);
-	}
-
-	public function loadClient() {
-		loadScript("https://apis.google.com/js/api.js", loadAuth2);
-	}
-
-	public function loadAuth2() {
-		GApi.load("auth2", authLoaded);
-	}
-
-	public function authLoaded(response:Dynamic) {
-		GApiClient.load("games", "v1", initCallback);
+		initCallback({});
 	}
 
 	public function authenticate(config:PlatformConfig, signInCallback:ServiceResponse) {
-		if(!serviceInited) {
-			try(
-				GApiAuth2.init(config).then(function(auth2:Dynamic) {
-					this.signInCallback = signInCallback;
-					this.auth2 = auth2;
+		this.signInCallback = signInCallback;
 
-					serviceInited = true;
-					if(!isSignedIn) {
-						auth2.isSignedIn.listen(onSignedIn);
-						loggingButton = Browser.document.querySelector("#loggingButton");
-						loggingButton.style.visibility = "visible";
-						loggingButton.addEventListener('click', function() {
-							auth2.signIn();
-							loggingButton.style.visibility = "hidden";
-						});
+		var signInClient:GoogleSignInClient = GoogleSignIn.getClient(KhaActivity.the(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+		signInClient
+		.silentSignIn()
+		.addOnCompleteListener(
+			KhaActivity.the(),
+			untyped __java__('
+			new com.google.android.gms.tasks.OnCompleteListener<com.google.android.gms.auth.api.signin.GoogleSignInAccount>() {
+				@Override
+				public void onComplete(com.google.android.gms.tasks.Task<com.google.android.gms.auth.api.signin.GoogleSignInAccount> task) {
+                    if (task.isSuccessful()) {
+                        com.google.android.gms.auth.api.signin.GoogleSignInAccount signedInAccount = task.getResult();
+                    } else {
+						com.google.android.gms.auth.api.signin.GoogleSignInClient signInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient((android.app.Activity) (com.ktxsoftware.kha.KhaActivity.the()),
+								com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+						android.content.Intent intent = signInClient.getSignInIntent();
+						//startActivityForResult(intent, 9001); //RC_SIGN_IN = 9001;
+						(com.ktxsoftware.kha.KhaActivity.the()).startActivity(intent);
 					}
-				})
-			) catch(error:Dynamic) {
-				trace(error);
-			}
-		}
+				}
+			}')
+		);
+	}
+
+	private function startSignInIntent() {
+		var signInClient:GoogleSignInClient = GoogleSignIn.getClient(KhaActivity.the(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+		var intent:Intent = signInClient.getSignInIntent();
+		KhaActivity.the().startActivity(intent);
 	}
 
 	private function onSignedIn(response:Dynamic) {
@@ -77,8 +63,7 @@ class PlatformServices implements IPlatformServices {
 	}
 
 	private function getPlayerScores(id:String, timeSpan:String, callback:ServiceResponse) {
-		var request = GApiScores.get({leaderboardId: id, playerId: "me", timeSpan: timeSpan});
-		request.execute(callback);
+		
 	}
 
 	public inline function getPlayerScoreAll(id:String, callback:ScoreListResponse) {
@@ -98,8 +83,7 @@ class PlatformServices implements IPlatformServices {
 	}
 
 	private function getLeaderboardScores(id:String, collection:String, timeSpan:String, callback:ScoreListResponse) {
-		var request = GApiScores.list({leaderboardId: id, collection: collection, timeSpan: timeSpan});
-		request.execute(parseLeaderboard.bind(_, callback));
+		
 	}
 
 	private inline function parsePlayerScore(entry:LeaderboardEntry) {
@@ -152,12 +136,11 @@ class PlatformServices implements IPlatformServices {
 	}
 
 	public function submitScore(id:String, value:Dynamic, callback:ScoreListResponse) {
-		var request = GApiScores.submit({leaderboardId: id, score: value});
-		request.execute(callback);
+		
 	}
 
 	public function get_isSignedIn():Bool {
-		return (auth2 != null) ? auth2.isSignedIn.get() : false;
+		return GoogleSignIn.getLastSignedInAccount(KhaActivity.the()) != null;
 	}
 
 }

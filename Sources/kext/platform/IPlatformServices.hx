@@ -23,9 +23,10 @@ typedef ScoreListData = {
 
 interface IPlatformServices {
 	public var serviceInited:Bool;
-	public var signedIn:Bool;
+	public var isSignedIn(get, null):Bool;
 
 	public function init(initCallback:ServiceResponse):Void;
+	public function authenticate(config:PlatformConfig, signInCallback:ServiceResponse):Void;
 
 	public function getPlayerScoreAll(id:String, callback:ScoreListResponse):Void;
 	public function getPlayerScoreAllTime(id:String, callback:ScoreListResponse):Void;

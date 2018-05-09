@@ -115,4 +115,18 @@ class Debug extends Basic {
 		}
 	}
 
+	public static function getTimerSymbol(time:Float, timelapse:Float = 1) {
+		var symbol = "";
+		time = (time / timelapse) % 1;
+		if     (time < 0.125) { symbol = "|"; }
+		else if(time < 0.250) { symbol = "/"; }
+		else if(time < 0.375) { symbol = "-"; }
+		else if(time < 0.500) { symbol = "\\";}
+		else if(time < 0.625) { symbol = "|"; }
+		else if(time < 0.750) { symbol = "/"; }
+		else if(time < 0.875) { symbol = "-"; }
+		else if(time < 1.000) { symbol = "\\";}
+		return symbol;
+	}
+
 }
