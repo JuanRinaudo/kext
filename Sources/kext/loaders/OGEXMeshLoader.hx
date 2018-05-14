@@ -1,6 +1,7 @@
 package kext.loaders;
 
 import kha.Blob;
+import kha.math.FastVector4;
 import kha.math.FastMatrix4;
 
 import haxe.io.StringInput;
@@ -13,9 +14,33 @@ typedef Metric = {
 	value:Dynamic
 }
 
-typedef Node = {
+typedef OGEXNode = {
 	key:String,
-	name:String,
+	name:String
+}
+
+typedef Node = { > OGEXNode,
+	transform:FastMatrix4,
+	boneNodes:Array<BoneNode>
+}
+
+typedef BoneNode = { > OGEXNode,
+	transform:FastMatrix4,
+	boneNodes:Array<BoneNode>,
+	animation:Animation
+}
+
+typedef Animation = {
+	track:Track
+}
+
+typedef Track = {
+	target:String,
+	times:Array<Float>,
+	values:Array<Dynamic>
+}
+
+typedef GeometryNode = { > OGEXNode,
 	geometryName:String,
 	transform:FastMatrix4
 }
@@ -30,10 +55,31 @@ typedef Geometry = {
 	vertexCount:UInt
 }
 
-typedef OGEXMeshData = {
-	metrics:Array<Metric>,
-	nodes:Array<Node>,
-	geometries:Array<Geometry>
+class OGEXMeshData {
+	public var metrics:Map<String, Metric> = new Map();
+	public var nodes:Map<String, Node> = new Map();
+	public var geometryNodes:Map<String, GeometryNode> = new Map();
+	public var geometries:Map<String, Geometry> = new Map();
+
+	public function new() {
+
+	}
+
+	public inline function getMetric(name:String):Metric {
+		return metrics.get(name);
+	}
+
+	public inline function getNodes(name:String):Node {
+		return nodes.get(name);
+	}
+
+	public inline function getGeometryNode(name:String):GeometryNode {
+		return geometryNodes.get(name);
+	}
+
+	public inline function getGeometry(name:String):Geometry {
+		return geometries.get(name);
+	}
 }
 
 class OGEXMeshLoader {
@@ -41,28 +87,43 @@ class OGEXMeshLoader {
 	public static function parse(blob:Blob):OGEXMeshData {
 		var input:StringInput = new StringInput(blob.toString());
 
-		var mesh:OGEXMeshData = {
-			metrics: [],
-			nodes: [],
-			geometries: []
-		}
+		var mesh:OGEXMeshData = new OGEXMeshData();
 		
 		var line:String;
 		var split:Array<String>;
+		var key:String;
 		while(input.position < input.length) {
 			line = input.readLine();
 			split = line.split(" ");
-			switch(split[0]) {
+			switch(getType(split[0])) {
 				case "Metric":
-					mesh.metrics.push(parseMetric(line));
+					var metric:Metric = parseMetric(line);
+					mesh.metrics.set(metric.key, metric);
+				case "Node":
+					var node:Node = parseNode(getKey(split[1]), input);
+					mesh.nodes.set(node.key, node);
 				case "GeometryNode":
-					mesh.nodes.push(parseNode(split[1], input));
+					var geometryNode:GeometryNode = parseGeometryNode(getKey(split[1]), input);
+					mesh.geometryNodes.set(geometryNode.name, geometryNode);
 				case "GeometryObject":
-					mesh.geometries.push(parseGeometry(split[1], input));
+					var geometry:Geometry = parseGeometry(getKey(split[1]), input);
+					mesh.geometries.set(geometry.key, geometry);
+				default:
+					// trace(split);
 			}
 		}
 
 		return mesh;
+	}
+
+	private static inline function getKey(line:String) {
+		var key:String = StringTools.replace(line, "\t", " ");
+		key = key.substr(0, key.indexOf(" "));
+		return key;
+	}
+
+	private static inline function getType(line:String) {
+		return StringTools.trim(line);
 	}
 
 	private static inline function getSubstring(line:String, start:String, end:String, index:Int = 0) {
@@ -76,55 +137,155 @@ class OGEXMeshLoader {
 		var key:String = getSubstring(line, '"', '"').value;
 		var typeSub = getSubstring(line, '{', ' ');
 		var type:String = typeSub.value;
-		var value:Dynamic = getSubstring(line, '{', '}', typeSub.endIndex).value;
+		var metricValue:Dynamic = getSubstring(line, '{', '}', typeSub.endIndex).value;
 		if(type == "float") {
-			value = Std.parseFloat(value);
+			metricValue = Std.parseFloat(metricValue);
+		} else {
+			metricValue = getSubstring(metricValue, '"', '"').value;
 		}
-		return {key: key, value: value};
+
+		return {key: key, value: metricValue};
 	}
 
 	private static inline function parseNode(key:String, input:StringInput):Node {
 		var name:String = "";
+		var transform:FastMatrix4 = null;
+		var bones:Array<BoneNode> = [];
+
+		var line:String = input.readLine();
+		var split:Array<String>;
+		while(checkNodeEnd(line)) {
+			split = StringTools.replace(line, "\t", "").split(" ");
+			switch(split[0]) {
+				case "Name":
+					name = getSubstring(line, '"', '"').value;
+				case "Transform":
+					transform = parseTransform(input);
+				case "BoneNode":
+					var bone:BoneNode = parseBone(split[1], input);
+					bones.push(bone);
+			}
+			line = input.readLine();
+		}
+
+		return {
+			key: key,
+			name: name,
+			transform: transform,
+			boneNodes: bones
+		}
+	}
+
+	private static inline function checkNodeEnd(line:String):Bool {
+		return StringTools.trim(line) != "}";
+	}
+
+	private static inline function parseBone(key:String, input:StringInput):BoneNode {
+		var name:String = "";
+		var transform:FastMatrix4 = null;
+		var bones:Array<BoneNode> = [];
+		var animation:Animation = null;
+
+		var line:String = input.readLine();
+		var split:Array<String>;
+		while(checkNodeEnd(line)) {
+			split = StringTools.replace(line, "\t", "").split(" ");
+			switch(split[0]) {
+				case "Name":
+					name = getSubstring(line, '"', '"').value;
+				case "Transform":
+					transform = parseTransform(input);
+				case "BoneNode":
+					var bone:BoneNode = parseBone(split[1], input);
+					bones.push(bone);
+				case "Animation":
+					animation = parseAnimation(input);
+			}
+			line = input.readLine();
+		}
+
+		return {
+			key: key,
+			name: name,
+			transform: transform,
+			boneNodes: bones,
+			animation: animation
+		}
+	}
+
+	private static inline function parseAnimation(input:StringInput):Animation {
+		var target:String = "";
+		var times:Array<Float> = [];
+		var values:Array<Dynamic> = [];
+		
+		var line = input.readLine();
+		var split:Array<String>;
+		while(checkNodeEnd(line)) {
+			split = StringTools.replace(line, "\t", "").split(" ");
+			switch(split[0]) {
+				case "Track":
+					target = getSubstring(line, "target = ", ")").value;
+				case "Time":
+					input.readLine();
+					var timesStrings:Array<String> = getSubstring(input.readLine(), "float {", "}").value.split(",");
+					for(time in timesStrings) {
+						times.push(Std.parseFloat(time));
+					}
+					input.readLine();
+				case "Value":
+					if(target == "%transform") {
+						input.readLine();
+						input.readLine(); // Key
+						input.readLine();
+						input.readLine(); // Type ex: float[16]
+						input.readLine();
+						var valueLine = input.readLine();
+						while(checkNodeEnd(valueLine)) {
+							values.push(parseValueFloat16(valueLine));
+							valueLine = input.readLine();
+						}
+						input.readLine();
+						input.readLine();
+					}
+			}
+			line = input.readLine();
+		}
+		
+		return {
+			track: {
+				target: target,
+				times: times,
+				values: values,
+			}
+		}
+	}
+
+	private static inline function parseValueFloat16(line:String):FastMatrix4 {
+		var valuesString:Array<String> = getSubstring(line, "{", "}").value.split(",");
+		return new FastMatrix4(
+			Std.parseFloat(valuesString[0]), Std.parseFloat(valuesString[1]), Std.parseFloat(valuesString[2]), Std.parseFloat(valuesString[3]),
+			Std.parseFloat(valuesString[4]), Std.parseFloat(valuesString[5]), Std.parseFloat(valuesString[6]), Std.parseFloat(valuesString[7]),
+			Std.parseFloat(valuesString[8]), Std.parseFloat(valuesString[9]), Std.parseFloat(valuesString[10]), Std.parseFloat(valuesString[11]),
+			Std.parseFloat(valuesString[12]), Std.parseFloat(valuesString[13]), Std.parseFloat(valuesString[14]), Std.parseFloat(valuesString[15])
+		);
+	}
+
+	private static inline function parseGeometryNode(key:String, input:StringInput):GeometryNode {
+		var name:String = "";
 		var geometryName:String = "";
-		var transform:FastMatrix4 = FastMatrix4.identity();
+		var transform:FastMatrix4 = null;
 
 		var line = input.readLine();
 		var split:Array<String>;
-		while(line != "}") {
+		while(checkNodeEnd(line)) {
 			split = StringTools.replace(line, "\t", "").split(" ");
 			switch(split[0]) {
 				case "Name":
 					name = getSubstring(line, '"', '"').value;
 				case "ObjectRef":
-					geometryName = getSubstring(line, "{", "}", line.indexOf("{")).value;
+					geometryName = getSubstring(line, "{", "}", line.indexOf("{") + 1).value;
 				case "Transform":
-					input.readLine();
-					input.readLine();
-					input.readLine();
-					var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
-					var floatSplit = line.split(",");
-					transform._00 = Std.parseFloat(floatSplit[0]);
-					transform._10 = Std.parseFloat(floatSplit[1]);
-					transform._20 = Std.parseFloat(floatSplit[2]);
-					transform._30 = Std.parseFloat(floatSplit[3]);
-					var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
-					var floatSplit = line.split(",");
-					transform._01 = Std.parseFloat(floatSplit[0]);
-					transform._11 = Std.parseFloat(floatSplit[1]);
-					transform._21 = Std.parseFloat(floatSplit[2]);
-					transform._31 = Std.parseFloat(floatSplit[3]);
-					var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
-					var floatSplit = line.split(",");
-					transform._02 = Std.parseFloat(floatSplit[0]);
-					transform._12 = Std.parseFloat(floatSplit[1]);
-					transform._22 = Std.parseFloat(floatSplit[2]);
-					transform._32 = Std.parseFloat(floatSplit[3]);
-					var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
-					var floatSplit = line.split(",");
-					transform._03 = Std.parseFloat(floatSplit[0]);
-					transform._13 = Std.parseFloat(floatSplit[1]);
-					transform._23 = Std.parseFloat(floatSplit[2]);
-					transform._33 = Std.parseFloat(floatSplit[3]);
+					transform = parseTransform(input);
 			}
 			line = input.readLine();
 		}
@@ -135,6 +296,40 @@ class OGEXMeshLoader {
 			geometryName: geometryName, 
 			transform: transform
 		};
+	}
+
+	private static inline function parseTransform(input:StringInput):FastMatrix4 {
+		var transform:FastMatrix4 = FastMatrix4.identity();
+		input.readLine();
+		input.readLine();
+		input.readLine();
+		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
+		var floatSplit = line.split(",");
+		transform._00 = Std.parseFloat(floatSplit[0]);
+		transform._10 = Std.parseFloat(floatSplit[1]);
+		transform._20 = Std.parseFloat(floatSplit[2]);
+		transform._30 = Std.parseFloat(floatSplit[3]);
+		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
+		var floatSplit = line.split(",");
+		transform._01 = Std.parseFloat(floatSplit[0]);
+		transform._11 = Std.parseFloat(floatSplit[1]);
+		transform._21 = Std.parseFloat(floatSplit[2]);
+		transform._31 = Std.parseFloat(floatSplit[3]);
+		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
+		var floatSplit = line.split(",");
+		transform._02 = Std.parseFloat(floatSplit[0]);
+		transform._12 = Std.parseFloat(floatSplit[1]);
+		transform._22 = Std.parseFloat(floatSplit[2]);
+		transform._32 = Std.parseFloat(floatSplit[3]);
+		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
+		var floatSplit = line.split(",");
+		transform._03 = Std.parseFloat(floatSplit[0]);
+		transform._13 = Std.parseFloat(floatSplit[1]);
+		transform._23 = Std.parseFloat(floatSplit[2]);
+		transform._33 = Std.parseFloat(floatSplit[3]);
+		input.readLine();
+		input.readLine();
+		return transform;
 	}
 
 	private static inline function parseGeometry(key:String, input:StringInput):Geometry {
@@ -148,7 +343,7 @@ class OGEXMeshLoader {
 
 		var line = input.readLine();
 		var split:Array<String>;
-		while(line != "}") {
+		while(checkNodeEnd(line)) {
 			split = StringTools.replace(line, "\t", "").split(" ");
 			switch(split[0]) {
 				case "VertexArray":
@@ -173,7 +368,7 @@ class OGEXMeshLoader {
 					#end
 					line = StringTools.replace(input.readLine(), "\t", "");
 					var index:Int = 0;
-					while(line != "}") {
+					while(checkNodeEnd(line)) {
 						split = line.split("}, ");
 						for(vector in split) {
 							parseIndices(indices, index, vector);
@@ -181,15 +376,12 @@ class OGEXMeshLoader {
 						}
 						line = StringTools.replace(input.readLine(), "\t", "");
 					}
+					input.readLine();
 			}
 			line = input.readLine();
 		}
 
 		vertexCount = vertexes.length;
-		trace(vertexes);
-		trace(normals);
-		trace(uvs);
-		trace(indices);
 		
 		return {
 			key: key,
@@ -222,7 +414,7 @@ class OGEXMeshLoader {
 		line = StringTools.replace(input.readLine(), "\t", "");
 		var index:Int = 0;
 		var split:Array<String>;
-		while(line != "}") {
+		while(checkNodeEnd(line)) {
 			split = line.split("}, ");
 			for(vector in split) {
 				parseFloat3(array, index, vector);
@@ -230,6 +422,7 @@ class OGEXMeshLoader {
 			}
 			line = StringTools.replace(input.readLine(), "\t", "");
 		}
+		input.readLine();
 		return array;
 	}
 
@@ -253,7 +446,7 @@ class OGEXMeshLoader {
 		line = StringTools.replace(input.readLine(), "\t", "");
 		var index:Int = 0;
 		var split:Array<String>;
-		while(line != "}") {
+		while(checkNodeEnd(line)) {
 			split = line.split("}, ");
 			for(vector in split) {
 				parseFloat2(array, index, vector);
@@ -261,6 +454,7 @@ class OGEXMeshLoader {
 			}
 			line = StringTools.replace(input.readLine(), "\t", "");
 		}
+		input.readLine();
 		return array;
 	}
 

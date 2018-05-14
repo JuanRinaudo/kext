@@ -54,14 +54,14 @@ class Debug extends Basic {
 			var size:Vector3 = boundingCube.getCubeSize().mult(0.5);
 			pipeline.camera = fromPipeline.camera;
 
-			cube.setPosition(boundingCube.position.add(boundingCube.v1));
+			cube.setPosition(boundingCube.transform.position.add(boundingCube.v1));
 			cube.setSize(size.mult(0.1));
 			cube.drawMesh(backbuffer, pipeline);
-			cube.setPosition(boundingCube.position.add(boundingCube.v2));
+			cube.setPosition(boundingCube.transform.position.add(boundingCube.v2));
 			cube.setSize(size.mult(0.1));
 			cube.drawMesh(backbuffer, pipeline);
 
-			cube.setPosition(boundingCube.position);
+			cube.setPosition(boundingCube.transform.position);
 			cube.setSize(size.mult(0.1));
 			cube.drawMesh(backbuffer, pipeline);
 			

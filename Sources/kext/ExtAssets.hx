@@ -70,9 +70,7 @@ class ExtAssets {
 	public static var animationFiles:AnimationFileList = new AnimationFileList();
 	public static var animations:AnimationList = new AnimationList();
 
-	public static function parseAssets(manifestJson:Blob, completeCallback:Void -> Void) {
-		onCompleteCallback = completeCallback;
-		
+	public static function parseAssets(manifestJson:Blob) {
 		var json = Json.parse(manifestJson.toString());
 		var assetList:Array<Dynamic> = json.assets;
 		for(asset in assetList) {
@@ -83,8 +81,6 @@ class ExtAssets {
 					parseAnimation(StringTools.replace(asset.name, "_anim", ""), Assets.blobs.get(asset.name));
 			}
 		}
-
-		onCompleteCallback();
 	}
 
 	public static function parseAtlas(name:String, atlasBlob:Blob) {

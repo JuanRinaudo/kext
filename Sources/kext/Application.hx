@@ -70,7 +70,8 @@ typedef ApplicationOptions = {
 	?defaultFontSize:Int,
 	?bufferWidth:Int,
 	?bufferHeight:Int,
-	?platformServices:Bool
+	?platformServices:Bool,
+	?extAssetManifests:Array<String>
 }
 
 typedef PostProcessingUniform = {
@@ -167,6 +168,7 @@ class Application {
 		if(applicationOptions.bufferWidth == null) { applicationOptions.bufferWidth = sysOptions.width; }
 		if(applicationOptions.bufferHeight == null) { applicationOptions.bufferHeight = sysOptions.height; }
 		if(applicationOptions.platformServices == null) { applicationOptions.platformServices = false; }
+		if(applicationOptions.extAssetManifests == null) { applicationOptions.extAssetManifests = []; }
 		return applicationOptions;
 	}
 
@@ -212,9 +214,12 @@ class Application {
 		defaultFont = Reflect.getProperty(Assets.fonts, options.defaultFontName);
 		defaultFontSize = options.defaultFontSize;
 		
-		ExtAssets.parseAssets(Assets.blobs.kextassets_json, parsingCompleteHandler);
-	
+		for(manifest in options.extAssetManifests) {
+			ExtAssets.parseAssets(Assets.blobs.get(manifest + "_json"));
+		}
+
 		onLoadComplete.dispatch();
+		parsingCompleteHandler();
 	}
 
 	private function parsingCompleteHandler() {

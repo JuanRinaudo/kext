@@ -3,25 +3,20 @@ package kext.math;
 import kha.math.Vector3;
 import kha.math.FastVector4;
 
+import kext.g4basics.Transform3D;
 import kext.g4basics.BasicMesh;
 
 class BoundingCube {
-	public var position:Vector3;
-	public var size(default, null):Vector3;
-	private var originalV1:Vector3;
-	private var originalV2:Vector3;
+	public var transform:Transform3D;
 	public var v1:Vector3;
 	public var v2:Vector3;
 
-	public inline function new(centerPosition:Vector3, vector1:Vector3, vector2:Vector3) {
+	public inline function new(transform:Transform3D, vector1:Vector3, vector2:Vector3) {
 		if(vector1.x == vector2.x) { trace("Bounding cube has no width"); }
 		if(vector1.y == vector2.y) { trace("Bounding cube has no height"); }
 		if(vector1.z == vector2.z) { trace("Bounding cube has no depth"); }
 
-		position = centerPosition;
-		size = new Vector3(1, 1, 1);
-		originalV1 = vector1.mult(1);
-		originalV2 = vector2.mult(1);
+		this.transform = transform;
 
 		v1 = vector1;
 		v2 = vector2;
@@ -32,44 +27,12 @@ class BoundingCube {
 	}
 
 	public inline function getCubeCenter():Vector3 {
-		return v1.add(position).add(getCubeSize().mult(0.5));
-	}
-
-	public inline function setPosition(vector:Vector3) {
-		position.setFrom(vector);
-	}
-
-	public inline function setScale(vector:Vector3) {
-		v1.x = originalV1.x * vector.x;
-		v1.y = originalV1.y * vector.y;
-		v1.z = originalV1.z * vector.z;
-		v2.x = originalV2.x * vector.x;
-		v2.y = originalV2.y * vector.y;
-		v2.z = originalV2.z * vector.z;
-		size.setFrom(vector);
-	}
-
-	public inline function translate(vector:Vector3) {
-		position.x += vector.x;
-		position.y += vector.y;
-		position.z += vector.z;
-	}
-
-	public inline function scale(vector:Vector3) {
-		v1.x *= vector.x;
-		v1.y *= vector.y;
-		v1.z *= vector.z;
-		v2.x *= vector.x;
-		v2.y *= vector.y;
-		v2.z *= vector.z;
-		size.x *= vector.x;
-		size.y *= vector.y;
-		size.z *= vector.z;
+		return v1.add(transform.position).add(getCubeSize().mult(0.5));
 	}
 
 	public inline function checkVectorOverlap(vector:Vector3) {
-		var tv1:Vector3 = v1.add(position);
-		var tv2:Vector3 = v2.add(position);
+		var tv1:Vector3 = v1.add(transform.position);
+		var tv2:Vector3 = v2.add(transform.position);
 		if(vector.x < tv1.x || vector.x > tv2.x) { return false; }
 		if(vector.y < tv1.y || vector.y > tv2.y) { return false; }
 		if(vector.z < tv1.z || vector.z > tv2.z) { return false; }
@@ -78,10 +41,10 @@ class BoundingCube {
 	}
 
 	public inline function checkCubeOverlap(cube:BoundingCube) {
-		var tv1:Vector3 = v1.add(position);
-		var tv2:Vector3 = v2.add(position);
-		var cubetv1:Vector3 = cube.v1.add(cube.position);
-		var cubetv2:Vector3 = cube.v2.add(cube.position);
+		var tv1:Vector3 = v1.add(transform.position);
+		var tv2:Vector3 = v2.add(transform.position);
+		var cubetv1:Vector3 = cube.v1.add(cube.transform.position);
+		var cubetv2:Vector3 = cube.v2.add(cube.transform.position);
 		if(tv1.x > cubetv2.x) return false;
 		if(tv1.y > cubetv2.y) return false;
 		if(tv1.z > cubetv2.z) return false;
@@ -117,11 +80,11 @@ class BoundingCube {
 			baseIndex += structSize;
 		}
 
-		return new BoundingCube(mesh.position, vector1, vector2);
+		return new BoundingCube(mesh.transform, vector1, vector2);
 	}
 
 	public function toString() {
-		return 'Bounding Cube (Position: $position, v1: $v1, v2: $v2)';
+		return 'Bounding Cube (Position: $transform, v1: $v1, v2: $v2)';
 	}
 
 }

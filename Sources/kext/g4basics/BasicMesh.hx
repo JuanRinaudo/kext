@@ -32,11 +32,9 @@ class BasicMesh {
 	public var vertexCount:UInt = 0;
 	public var vertexStructure:VertexStructure;
 
-	public var modelMatrix:FastMatrix4;
+	public var modelMatrix(get, null):FastMatrix4;
 
-	public var position(default, null):Vector3;
-	public var rotation(default, null):Vector3;
-	public var size(default, null):Vector3;
+	public var transform:Transform3D;
 
 	public static var VERTEX_OFFSET:Int = 0;
 	public static var NORMAL_OFFSET:Int = 3;
@@ -51,10 +49,7 @@ class BasicMesh {
 
 		vertexStructure = structure;
 
-		position = new Vector3(0, 0, 0);
-		rotation = new Vector3(0, 0, 0);
-		size = new Vector3(1, 1, 1);
-		recalculateModelMatrix();
+		transform = new Transform3D();
 	}
 
 	public inline function setBufferMesh(backbuffer:Image) {
@@ -63,6 +58,8 @@ class BasicMesh {
 	}
 	
 	public inline function drawMesh(backbuffer:Image, pipeline:BasicPipeline, setPipeline:Bool = true) {
+		modelMatrix = transform.getMatrix();
+
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
 		backbuffer.g4.setVertexBuffer(vertexBuffer);
 		backbuffer.g4.setIndexBuffer(indexBuffer);
@@ -73,49 +70,27 @@ class BasicMesh {
 	}
 
 	public inline function translate(deltaPosition:Vector3) {
-		position = position.add(deltaPosition);
-		modelMatrix = modelMatrix.multmat(FastMatrix4.translation(deltaPosition.x, deltaPosition.y, deltaPosition.z));
+		transform.translate(deltaPosition);
 	}
 
 	public inline function rotate(deltaRotation:Vector3) {
-		rotation = rotation.add(deltaRotation);
-		modelMatrix = modelMatrix.multmat(FastMatrix4.rotation(deltaRotation.x, deltaRotation.y, deltaRotation.z));
+		transform.rotate(deltaRotation);
 	}
 
 	public inline function scale(deltaScale:Vector3) {
-		size.x *= deltaScale.x;
-		size.y *= deltaScale.y;
-		size.z *= deltaScale.z;
-		modelMatrix = modelMatrix.multmat(FastMatrix4.scale(deltaScale.x, deltaScale.y, deltaScale.z));
+		transform.scaleTransform(deltaScale);
 	}
 
-	public inline function recalculateModelMatrix() {
-		modelMatrix = FastMatrix4.identity()
-			.multmat(FastMatrix4.translation(position.x, position.y, position.z))
-			.multmat(FastMatrix4.scale(size.x, size.y, size.z))
-			.multmat(FastMatrix4.rotation(rotation.x, rotation.y, rotation.z));
+	public inline function setPosition(newPosition:Vector3) {
+		transform.setPosition(newPosition);
 	}
 
-	public function setTransform(newPosition:Vector3, newRotation:Vector3, newSize:Vector3) {
-		position = newPosition;
-		rotation = newRotation;
-		size = newSize;
-		recalculateModelMatrix();
+	public inline function setRotation(newRotation:Vector3) {
+		transform.setRotation(newRotation);
 	}
 
-	public function setPosition(newPosition:Vector3) {
-		position.setFrom(newPosition);
-		recalculateModelMatrix();
-	}
-
-	public function setRotation(newRotation:Vector3) {
-		rotation.setFrom(newRotation);
-		recalculateModelMatrix();
-	}
-
-	public function setSize(newSize:Vector3) {
-		size.setFrom(newSize);
-		recalculateModelMatrix();
+	public inline function setSize(newSize:Vector3) {
+		transform.setScale(newSize);
 	}
 
 	public inline function addTriangle(v1:Vector3, v2:Vector3, v3:Vector3, n1:Vector3, n2:Vector3, n3:Vector3,
@@ -278,10 +253,8 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static function fromOGEXData(data:OGEXMeshData, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
-		if(data.geometries.length == 0) { return null; }
-
-		var geometry = data.geometries[0];
+	public static function fromOGEXGeometry(geometry:Geometry, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		var geometry = geometry;
 		
 		var mesh:BasicMesh = new BasicMesh(geometry.vertexCount, geometry.triangleCount * 3, structure, vertexUsage, indexUsage);
 
@@ -320,13 +293,23 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static inline function getOGEXMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
+	public static inline function getOGEXMeshes(blob:Blob, structure:VertexStructure, color:Color = null):Array<BasicMesh> {
 		var ogexMeshData = OGEXMeshLoader.parse(blob);
-		var mesh:BasicMesh = BasicMesh.fromOGEXData(ogexMeshData, structure);
-		if(color != null) {
-			BasicMesh.setAllVertexesColor(mesh, structure, color);
+		var meshes:Array<BasicMesh> = [];
+		var mesh:BasicMesh = null;
+		for(node in ogexMeshData.geometryNodes) {
+			mesh = BasicMesh.fromOGEXGeometry(ogexMeshData.getGeometry(node.geometryName), structure);
+			mesh.transform.fromMatrix(node.transform);
+			if(color != null) {
+				BasicMesh.setAllVertexesColor(mesh, structure, color);
+			}
+			meshes.push(mesh);
 		}
-		return mesh;
+		return meshes;
+	}
+
+	public static inline function getOGEXMesh(blob:Blob, structure:VertexStructure, color:Color = null, id:Int = 0):BasicMesh {
+		return getOGEXMeshes(blob, structure, color)[id];
 	}
 
 	private static inline function setAllVertexDataValue(vertexes:Float32Array, offset:Int, size:Int, value:Float) {
@@ -352,6 +335,10 @@ class BasicMesh {
 			vertexes.set(baseIndex + COLOR_OFFSET + 3, color.A);
 		}
 		mesh.vertexBuffer.unlock();
+	}
+
+	public function get_modelMatrix():FastMatrix4 {
+		return transform.getMatrix();
 	}
 
 }

@@ -24,15 +24,15 @@ class Transform2D {
 	public var originY(get, set):Float;
 	public var angle(default, set):Float;
 
-	public function new(position:Vector2, scale:Vector2, angle:Float = 0, origin:Vector2 = null) {
+	public function new(position:Vector2 = null, scale:Vector2 = null, angle:Float = 0, origin:Vector2 = null) {
 		_position = position;
 		_scale = scale;
 		this.angle = angle;
 		_origin = origin;
 
-		if(_origin == null) {
-			_origin = new Vector2(0, 0);
-		}
+		if(position == null) { position = new Vector2(0, 0); }
+		if(scale == null) { scale = new Vector2(1, 1); }
+		if(_origin == null) { _origin = new Vector2(0, 0); }
 		
 		transform = FastMatrix3.identity();
 		dirty = true;
@@ -116,20 +116,25 @@ class Transform2D {
 	}
 
 	public inline function get_position():Vector2 {
-		return new Vector2(x, y);
+		return new Vector2(_position.x, _position.y);
 	}
 	
 	public inline function get_scale():Vector2 {
-		return new Vector2(scaleX, scaleY);
+		return new Vector2(_scale.x, _scale.y);
 	}
 
 	public inline function get_origin():Vector2 {
-		return new Vector2(originX, originY);
+		return new Vector2(_origin.x, _origin.y);
 	}
 
 	public static function fromFloats(x:Float = 0, y:Float = 0, scaleX:Float = 1, scaleY:Float = 1,
 		angle:Float = 0, originX:Float = 0, originY:Float = 0):Transform2D {
-		return new Transform2D(new Vector2(x, y), new Vector2(scaleX, scaleY), angle, new Vector2(originX, originY));
+		return new Transform2D(
+			new Vector2(x, y),
+			new Vector2(scaleX, scaleY),
+			angle,
+			new Vector2(originX, originY)
+		);
 	}
 
 }
