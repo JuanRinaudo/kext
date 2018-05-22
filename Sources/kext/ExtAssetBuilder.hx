@@ -18,8 +18,10 @@ class ExtAssetBuilder {
 
 		var outputFolder = Compiler.getOutput();
 		outputFolder = outputFolder.replace("\\", "/");
-		#if kha_android
+		#if kha_android_java
 		outputFolder += ("/app/src/main/assets");
+		#elseif kha_android
+		outputFolder += ("/../../android-native");
 		#else
 		outputFolder = outputFolder.substring(0, outputFolder.lastIndexOf("/"));
 		#end

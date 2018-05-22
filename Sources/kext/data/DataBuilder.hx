@@ -33,7 +33,7 @@ class DataBuilder {
 	}
 
 	static private function getFilePath(filename:String) {
-		return '../Data/$filename';
+		return '../$filename';
 	}
 
 	static private function getFile(path:String) {

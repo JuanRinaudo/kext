@@ -56,7 +56,7 @@ import kext.platform.html5.PlatformServices;
 #elseif kha_krom
 import kext.platform.krom.PlatformServices;
 #elseif kha_android
-import kext.platform.android.PlatformServices;
+// import kext.platform.android.PlatformServices;
 #end
 
 using kext.UniformType;
@@ -109,7 +109,7 @@ class Application {
 	public static var postbackbuffer:Image;
 
 	public static var platform:Platform;
-	public static var services:PlatformServices;
+	// public static var services:PlatformServices;
 
 	public static var onApplicationStart:Signal<ApplicationStartEvent> = new Signal();
 	public static var onApplicationEnd:Signal<ApplicationEndEvent> = new Signal();
@@ -187,9 +187,9 @@ class Application {
 		platform.addFullscreenHandler();
 		platform.setBlurFocusHandler(pause, resume);
 
-		if(options.platformServices) {
-			services = new PlatformServices();
-		}
+		// if(options.platformServices) {
+		// 	services = new PlatformServices();
+		// }
 
 		createBuffers(options.bufferWidth, options.bufferHeight);
 
@@ -203,6 +203,8 @@ class Application {
 		Assets.loadEverything(loadCompleteHandler);
 
 		onApplicationStart.dispatch();
+
+		// gamecenter.GameCenter.init();
 	}
 
 	private function createBuffers(width:Int, height:Int) {
@@ -223,11 +225,11 @@ class Application {
 	}
 
 	private function parsingCompleteHandler() {
-		if(options.platformServices) {
-			services.init(serviceInitCompleted);
-		} else {
+		// if(options.platformServices) {
+		// 	services.init(serviceInitCompleted);
+		// } else {
 			serviceInitCompleted({});
-		}
+		// }
 	}
 
 	private function serviceInitCompleted(response:Dynamic) {
