@@ -12,6 +12,8 @@ import kha.System.SystemOptions;
 import kha.Scaler;
 import kha.Shaders;
 import kha.Scaler.TargetRectangle;
+import kha.Window;
+import kha.WindowOptions;
 
 import kha.math.Vector2;
 import kha.math.FastVector2;
@@ -43,10 +45,12 @@ import kha.graphics4.DepthStencilFormat;
 
 import kext.debug.Debug;
 
-#if (js && !kha_krom)
+#if (js && !kha_krom && !kha_debug_html5)
 import kext.platform.html5.Platform;
 #elseif kha_krom
 import kext.platform.krom.Platform;
+#elseif kha_debug_html5
+import kext.platform.debughtml5.Platform;
 #elseif kha_android
 import kext.platform.android.Platform;
 #end
@@ -61,6 +65,9 @@ import kext.platform.krom.PlatformServices;
 
 using kext.UniformType;
 
+//TODOLIST:
+// * Implement multiwindow and framebuffer rendering correctly
+
 typedef ApplicationOptions = {
 	?updateStart:Float,
 	?updatePeriod:Float,
@@ -71,7 +78,8 @@ typedef ApplicationOptions = {
 	?bufferWidth:Int,
 	?bufferHeight:Int,
 	?platformServices:Bool,
-	?extAssetManifests:Array<String>
+	?extAssetManifests:Array<String>,
+	?imgScaleQuality:ImageScaleQuality
 }
 
 typedef PostProcessingUniform = {
@@ -83,7 +91,8 @@ typedef PostProcessingUniform = {
 
 class Application {
 
-	private var sysOptions:SystemOptions;
+	private var windowOptions:WindowOptions;
+	private var systemOptions:SystemOptions;
 	private var options:ApplicationOptions;
 
 	private var currentState:AppState;
@@ -134,7 +143,8 @@ class Application {
 	private var debug:Debug;
 
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
-		sysOptions = defaultSystemOptions(systemOptions);
+		this.systemOptions = defaultSystemOptions(systemOptions);
+		windowOptions = defaultWindowOptions(systemOptions.window);
 		options = defaultApplicationOptions(applicationOptions);
 		width = options.bufferWidth;
 		height = options.bufferHeight;
@@ -143,7 +153,7 @@ class Application {
 		
 		deltaTime = options.updatePeriod;
 
-		System.init(systemOptions, onInit);
+		System.start(systemOptions, onStart);
 
 		if(Application.instance == null) {
 			Application.instance = this;
@@ -152,10 +162,11 @@ class Application {
 		}
 	}
 
+	private function defaultWindowOptions(windowOptions:WindowOptions):WindowOptions {
+		return windowOptions;
+	}
+
 	private function defaultSystemOptions(systemOptions:SystemOptions):SystemOptions {
-		if(systemOptions.resizable == null) { systemOptions.resizable = true; }
-		if(systemOptions.maximizable == null) { systemOptions.maximizable = true; }
-		if(systemOptions.minimizable == null) { systemOptions.minimizable = true; }
 		return systemOptions;
 	}
 
@@ -165,14 +176,15 @@ class Application {
 		if(applicationOptions.stateArguments == null) { applicationOptions.stateArguments = []; }
 		if(applicationOptions.defaultFontName == null) { applicationOptions.defaultFontName = "KenPixel"; }
 		if(applicationOptions.defaultFontSize == null) { applicationOptions.defaultFontSize = 18; }
-		if(applicationOptions.bufferWidth == null) { applicationOptions.bufferWidth = sysOptions.width; }
-		if(applicationOptions.bufferHeight == null) { applicationOptions.bufferHeight = sysOptions.height; }
+		if(applicationOptions.bufferWidth == null) { applicationOptions.bufferWidth = systemOptions.width; }
+		if(applicationOptions.bufferHeight == null) { applicationOptions.bufferHeight = systemOptions.height; }
 		if(applicationOptions.platformServices == null) { applicationOptions.platformServices = false; }
 		if(applicationOptions.extAssetManifests == null) { applicationOptions.extAssetManifests = []; }
+		if(applicationOptions.imgScaleQuality == null) { applicationOptions.imgScaleQuality = ImageScaleQuality.Low; }
 		return applicationOptions;
 	}
 
-	private function onInit() {
+	private function onStart(window:Window) {
 		debug = new Debug();
 
 		gamepad = new GamepadInput();
@@ -182,7 +194,7 @@ class Application {
 
 		audio = new AudioManager();
 
-		platform = new Platform(sysOptions);
+		platform = new Platform(systemOptions);
 		platform.addResizeHandler();
 		platform.addFullscreenHandler();
 		platform.setBlurFocusHandler(pause, resume);
@@ -198,7 +210,7 @@ class Application {
 		setPostProcessingShader(Shaders.painter_image_frag);
 
 		loaderUpdateID = Scheduler.addTimeTask(loaderUpdatePass, options.updateStart, options.updatePeriod);
-		System.notifyOnRender(loaderRenderPass);
+		System.notifyOnFrames(loaderRenderPass);
 
 		Assets.loadEverything(loadCompleteHandler);
 
@@ -233,8 +245,8 @@ class Application {
 	}
 
 	private function serviceInitCompleted(response:Dynamic) {
-		System.removeRenderListener(loaderRenderPass);
-		System.notifyOnRender(renderPass);
+		System.removeFramesListener(loaderRenderPass);
+		System.notifyOnFrames(renderPass);
 
 		Scheduler.removeTimeTask(loaderUpdateID);
 		Scheduler.addTimeTask(updatePass, options.updateStart, options.updatePeriod);
@@ -246,7 +258,9 @@ class Application {
 		time += options.updatePeriod;
 	}
 
-	private function loaderRenderPass(framebuffer:Framebuffer) {
+	private function loaderRenderPass(framebuffers:Array<Framebuffer>) {
+		var framebuffer:Framebuffer = framebuffers[0];
+
 		backbuffer.g2.begin(true);
 		
 		backbuffer.g2.fillRect(0, height * 0.4, width * Assets.progress, height * 0.2);
@@ -255,13 +269,15 @@ class Application {
 		backbuffer.g2.fillRect(width * 0.5 - barWidth, height * 0.6, barWidth * 2, height * 0.1);
 		backbuffer.g2.end();
 
-		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
+		framebuffer.g2.imageScaleQuality = options.imgScaleQuality;
 		framebuffer.g2.begin(true);
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
 	}
 
-	private function renderPass(framebuffer:Framebuffer) {
+	private function renderPass(framebuffers:Array<Framebuffer>) {
+		var framebuffer:Framebuffer = framebuffers[0];
+
 		if(currentState != null) {
 			currentState.render(backbuffer);
 		}
@@ -301,7 +317,7 @@ class Application {
 			backbuffer.g2.end();
 		}
 
-		framebuffer.g2.imageScaleQuality = ImageScaleQuality.High;
+		framebuffer.g2.imageScaleQuality = ImageScaleQuality.Low;
 		framebuffer.g2.begin(true);
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
@@ -313,7 +329,7 @@ class Application {
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {
 		var uniforms:Map<String, PostProcessingUniform> = postProcessingUniforms.get(pipeline.fragmentShader);
-		buffer.g4.setVector2(pipeline.getConstantLocation("RENDER_SIZE"), new FastVector2(sysOptions.width, sysOptions.height));
+		buffer.g4.setVector2(pipeline.getConstantLocation("RENDER_SIZE"), new FastVector2(systemOptions.width, systemOptions.height));
 		for(uniform in uniforms) {
 			switch(uniform.type) {
 				case BOOL:

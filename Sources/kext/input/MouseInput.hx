@@ -126,6 +126,7 @@ class MouseInput extends Basic
 		checkQueue(pressedQueue, DOWN);
 		
 		mouseWheel = 0;
+		_posDelta.x = _posDelta.y = 0;
 	}
 	
 	private function checkQueue(queue:Array<Int>, state:InputState) {
