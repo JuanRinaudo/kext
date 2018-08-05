@@ -306,7 +306,7 @@ class Application {
 		if (paused) {
 			backbuffer.g2.begin(false);
 
-			backbuffer.g2.transformation = FastMatrix3.identity();
+			backbuffer.g2.pushTransformation(FastMatrix3.identity());
 			backbuffer.g2.color = Color.fromFloats(0, 0, 0, 0.5);
 			backbuffer.g2.fillRect(0, 0, width, height);
 			
@@ -329,7 +329,7 @@ class Application {
 
 	private inline function setUniformParameters(pipeline:PipelineState, buffer:Image) {
 		var uniforms:Map<String, PostProcessingUniform> = postProcessingUniforms.get(pipeline.fragmentShader);
-		buffer.g4.setVector2(pipeline.getConstantLocation("RENDER_SIZE"), new FastVector2(systemOptions.width, systemOptions.height));
+		//buffer.g4.setVector2(pipeline.getConstantLocation("RENDER_SIZE"), new FastVector2(systemOptions.width, systemOptions.height)); //TODO: FIX RENDER SIZE WARNING
 		for(uniform in uniforms) {
 			switch(uniform.type) {
 				case BOOL:

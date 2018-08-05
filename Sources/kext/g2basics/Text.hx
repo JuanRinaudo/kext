@@ -56,7 +56,7 @@ class Text extends Basic {
 	}
 
 	override public function render(backbuffer:Image) {
-		backbuffer.g2.transformation = transform.getMatrix();
+		backbuffer.g2.pushTransformation(transform.getMatrix().multmat(backbuffer.g2.transformation));
 		backbuffer.g2.font = font;
 		backbuffer.g2.fontSize = fontSize;
 		backbuffer.g2.color = color;
@@ -66,6 +66,7 @@ class Text extends Basic {
 			backbuffer.g2.drawString(line, offsetByLine[i].x, offsetByLine[i].y);
 			i++;
 		}
+		backbuffer.g2.popTransformation();
 	}
 
 	public function set_text(value:String):String {

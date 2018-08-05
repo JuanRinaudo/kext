@@ -51,8 +51,8 @@ class BasicSprite extends Basic {
 
 	override public function render(backbuffer:Image) {
 		backbuffer.g2.color = color;
-		backbuffer.g2.transformation = transform.getMatrix();
-
+		backbuffer.g2.pushTransformation(transform.getMatrix().multmat(backbuffer.g2.transformation));
+		
 		if(subimage != null) {
 			backbuffer.g2.drawSubImage(image, 0, 0, subimage.x, subimage.y, subimage.width, subimage.height);
 		} else {
@@ -62,6 +62,7 @@ class BasicSprite extends Basic {
 		#if debug
 		kext.debug.Debug.drawBounds(backbuffer, bounds);
 		#end
+		backbuffer.g2.popTransformation();
 	}
 
 	public inline function setSubimage(x:Float, y:Float, width:Float, height:Float) {
