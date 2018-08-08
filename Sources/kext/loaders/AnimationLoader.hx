@@ -36,7 +36,9 @@ class AnimationLoader {
 				}
 			} else {
 				for(i in anim.from ... Math.floor(anim.to + 1)) {
-					frames.push(ExtAssets.frames.get(anim.prefix + i));
+					var padding:Int = anim.zeroPadding != null ? anim.zeroPadding : 0;
+					var index:String = StringTools.lpad(i + "", "0", padding);
+					frames.push(ExtAssets.frames.get(anim.prefix + index));
 				}
 				if(anim.yoyo == true) {
 					for(i in Math.floor(anim.from + 1) ... Math.floor(anim.to + 1)) {
@@ -49,7 +51,7 @@ class AnimationLoader {
 				name: anim.name,
 				frames: frames,
 				fps: anim.fps,
-				frameDelta: 1 / anim.fps,
+				frameDelta: (anim.fps == null || anim.fps == 0) ? 0.01666 : 1 / anim.fps,
 				loop: anim.loop == true,
 				length: frames.length
 			}
