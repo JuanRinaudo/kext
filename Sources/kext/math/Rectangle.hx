@@ -2,6 +2,7 @@ package kext.math;
 
 import kha.math.Vector2;
 
+@:structInit
 class Rectangle
 {
 	

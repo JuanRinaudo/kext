@@ -22,6 +22,8 @@ class Text extends Basic {
 
 	public var color:Color;
 
+	public var lineSpacing(default, set):Float;
+
 	private var textLines:Array<String>;
 	private var offsetByLine:Array<Vector2>;
 
@@ -42,6 +44,8 @@ class Text extends Basic {
 		font = Application.defaultFont;
 		fontSize = Application.defaultFontSize;
 		text = label;
+
+		lineSpacing = 1;
 
 		color = Color.White;
 	}
@@ -69,9 +73,7 @@ class Text extends Basic {
 		backbuffer.g2.popTransformation();
 	}
 
-	public function set_text(value:String):String {
-		text = value;
-
+	private function cacheText() {
 		textLines = text.split("\n");
 		offsetByLine = [];
 		var x:Float = 0;
@@ -80,7 +82,7 @@ class Text extends Basic {
 		var i = 0;
 		for(line in textLines) {
 			lineWidth = font.width(fontSize, line);
-			y = fontSize * i;
+			y = fontSize * i * lineSpacing;
 			switch(horizontalAlign) {
 				case LEFT:
 					x = 0;
@@ -93,15 +95,25 @@ class Text extends Basic {
 				case TOP:
 					y += 0;
 				case MIDDLE:
-					y += (height - fontSize * textLines.length) / 2;
+					y += (height - fontSize * textLines.length * lineSpacing) / 2;
 				case BOTTOM:
-					y += height - fontSize * textLines.length;
+					y += height - fontSize * textLines.length * lineSpacing;
 			}
 			offsetByLine.push(new Vector2(x, y));
 			i++;
 		}
-		
+	}
+
+	public function set_text(value:String):String {
+		text = value;
+		cacheText();
 		return text;
+	}
+
+	public function set_lineSpacing(value:Float):Float {
+		lineSpacing = value;
+		cacheText();
+		return lineSpacing;
 	}
 
 	private static var cachedText:Text = null;

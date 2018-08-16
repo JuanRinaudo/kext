@@ -42,7 +42,6 @@ class BasicSprite extends Basic {
 		}
 
 		color = Color.White;
-		centerOrigin();
 
 		bounds = BoundingRect.fromSprite(this);
 
@@ -74,7 +73,6 @@ class BasicSprite extends Basic {
 		subimage = rectangle;
 		box.x = rectangle.width;
 		box.y = rectangle.height;
-		centerOrigin(sourceDelta);
 	}
 
 	public inline function setFrame(frame:FrameData) {

@@ -8,7 +8,7 @@ import haxe.Json;
 class DataBuilder {
 
 	static private function getType(data:Dynamic, fieldname:String) {
-		var value:String = Reflect.field(data, fieldname);
+		var value:Dynamic = Reflect.field(data, fieldname);
 		var dynArray:Array<Dynamic>;
 		
 		if(Type.typeof(value) == Type.typeof(1)) {
@@ -20,13 +20,35 @@ class DataBuilder {
 		} else if(Type.getClassName(Type.getClass(value)) == "String") {
 			return FVar(macro: String, macro $v{value});
 		} else if(Type.typeof(value) == Type.typeof({})) {
-			if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y")) {
+			if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y") && Reflect.fields(value).length == 2) {
 				return FVar(macro: kha.math.Vector2, macro $v{value});
+			} else if(Reflect.hasField(value, "x") && Reflect.hasField(value, "y") &&
+				Reflect.hasField(value, "width") && Reflect.hasField(value, "height") && Reflect.fields(value).length == 4) {
+				return FVar(macro: kext.math.Rectangle, macro $v{value});
 			} else {
 				return FVar(macro: Dynamic, macro $v{value});
 			}
 		} else if(Type.getClassName(Type.getClass(value)) == "Array") {
-			return FVar(macro: Array<Dynamic>, macro $v{value});
+			if(Type.typeof(value[0]) == Type.typeof(1)) {
+				return FVar(macro: Array<Int>, macro $v{value});
+			} else if(Type.typeof(value[0]) == Type.typeof(0.1)) {
+				return FVar(macro: Array<Float>, macro $v{value});
+			} else if(Type.typeof(value[0]) == Type.typeof(true)) {
+				return FVar(macro: Array<Bool>, macro $v{value});
+			} else if(Type.getClassName(Type.getClass(value)) == "String") {
+				return FVar(macro: Array<String>, macro $v{value});
+			} else if(Type.typeof(value[0]) == Type.typeof({})) {
+				if(Reflect.hasField(value[0], "x") && Reflect.hasField(value[0], "y") && Reflect.fields(value[0]).length == 2) {
+					return FVar(macro: Array<kha.math.Vector2>, macro $v{value});
+				} else if(Reflect.hasField(value[0], "x") && Reflect.hasField(value[0], "y") &&
+					Reflect.hasField(value[0], "width") && Reflect.hasField(value[0], "height") && Reflect.fields(value[0]).length == 4) {
+					return FVar(macro: Array<kext.math.Rectangle>, macro $v{value});
+				} else {
+					return FVar(macro: Array<Dynamic>, macro $v{value});
+				}
+			} else {
+				return FVar(macro: Array<Dynamic>, macro $v{value});
+			}
 		} else {
 			return FVar(macro: Dynamic, macro $v{value});
 		}

@@ -2,7 +2,7 @@ package kext.g2basics;
 
 import kha.Image;
 
-class Layer {
+class CameraLayer {
 
     public var elements:Array<Basic>;
     public var camera:Camera2D;
@@ -31,8 +31,8 @@ class Camera2D extends Basic {
 
     public var transform:Transform2D;
 
-    public var defaultLayer:Layer;
-    private var layers:Array<Layer>;
+    public var defaultLayer:CameraLayer;
+    private var layers:Array<CameraLayer>;
 
     public function new(x:Float, y:Float)
     {
@@ -40,34 +40,39 @@ class Camera2D extends Basic {
 
         transform = Transform2D.fromFloats(0, 0);
 
-        defaultLayer = new Layer(this);
+        defaultLayer = new CameraLayer(this);
         layers = [defaultLayer];
     }
 
-    public function createLayer(layerIndex:Int = -1):Layer
+    public function createLayer(layerIndex:Int = -1):CameraLayer
     {
-        var layer:Layer = new Layer(this);
+        var layer:CameraLayer = new CameraLayer(this);
         layers.insert(layerIndex, layer);
         return layer;
     }
 
-    public function add(sprite:Basic, layer:Layer = null)
-    {
-        if(layer == null) { layer = defaultLayer; }
-        layer.add(sprite);
+    public function moveLayer(layer:CameraLayer, layerIndex:Int) {
+        layers.remove(layer);
+        layers.insert(layerIndex, layer);
     }
 
-    public function remove(sprite:BasicSprite, layer:Layer = null)
+    public function add(basic:Basic, layer:CameraLayer = null)
+    {
+        if(layer == null) { layer = defaultLayer; }
+        layer.add(basic);
+    }
+
+    public function remove(basic:Basic, layer:CameraLayer = null)
     {
         if(layer == null) {
             for(searchLayer in layers) { 
-                if(searchLayer.elements.indexOf(sprite) != -1) {
-                    searchLayer.remove(sprite);
+                if(searchLayer.elements.indexOf(basic) != -1) {
+                    searchLayer.remove(basic);
                     return;
                 }
             }
         } else {
-            layer.remove(sprite);
+            layer.remove(basic);
         }
     }
 

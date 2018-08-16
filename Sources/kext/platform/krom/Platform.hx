@@ -47,6 +47,10 @@ class Platform implements IPlatform {
 		// kha.SystemImpl.isFullscreen
 	}
 
+	public function setBlurFocusHandler(pause:Void -> Void, resume:Void -> Void) {
+		
+	}
+
 	private static inline function checkDesktop() {
 		return true;
 	}

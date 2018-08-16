@@ -282,7 +282,7 @@ class BasicMesh {
 		
 		var indexes = mesh.indexBuffer.lock();
 		for(i in 0...geometry.triangleCount * 3) {
-			indexes.set(i, geometry.indices.get(i));
+			indexes.set(i, Math.floor(geometry.indices.get(i)));
 		}
 		mesh.indexBuffer.unlock();
 

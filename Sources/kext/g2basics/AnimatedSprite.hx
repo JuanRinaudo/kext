@@ -1,21 +1,26 @@
 package kext.g2basics;
 
 import kha.Image;
+import kha.math.Vector2;
 
 import kext.ExtAssets;
 import kext.loaders.AnimationLoader.AnimationData;
 
 class AnimatedSprite extends BasicSprite {
 
-	private var lastFrame:Int;
-	private var currentFrame:Int;
-	private var currentAnimation:AnimationData;
+	public var lastFrame:Int;
+	public var currentFrame:Int;
+	public var currentAnimation:AnimationData;
 
-	private var animationTime:Float;
-	private var animationRunning:Bool;
+	public var originOffset:Vector2;
+
+	public var animationTime:Float;
+	public var animationRunning:Bool;
 
 	public function new(x:Float, y:Float, animation:AnimationData = null, startingFrame:Int = 0) {
 		super(x, y, null);
+
+		originOffset = new Vector2(0, 0);
 
 		setAnimation(animation, startingFrame);
 

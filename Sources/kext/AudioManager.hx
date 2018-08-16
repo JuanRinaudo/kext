@@ -1,13 +1,12 @@
 package kext;
 
 import kha.Sound;
-import kha.audio1.AudioChannel;
-import kha.audio2.Audio1;
 
 class AudioManager extends Basic
-{	
+{
+	public var masterVolume(default, set):Float = 1;
 
-	public var audios:Array<AudioChannel>;
+	public var instances:Array<AudioInstance>;
 	public var audioTimes:Array<Float>;
 	public var audioTimesEnd:Array<Float>;
 
@@ -15,66 +14,73 @@ class AudioManager extends Basic
 	{
 		super();
 		
-		audios = [];
+		instances = [];
 		audioTimes = [];
 		audioTimesEnd = [];
 	}
 	
 	override public function update(delta:Float) 
 	{
-		var audio:AudioChannel;
+		var instance:AudioInstance;
 		var time:Float;
 		var endTime:Float;
-		for (i in 0...audios.length) {
-			audio = audios[i];			
+		for (i in 0...instances.length) {
+			instance = instances[i];			
 			
-			if(audio != null) {
+			if(instance != null) {
 				audioTimes[i] += delta;
 				time = audioTimes[i];
 				endTime = audioTimesEnd[i];
 				if (endTime > 0 && time > endTime) {
-					audio.stop();
+					instance.channel.stop();
 				}
 				
-				if (audio.finished) {
-					endChannel(audio, i);
+				if (instance.channel.finished) {
+					endChannel(instance, i);
 				}
 			}
 		}
 	}
 
-	public function endChannel(audio:AudioChannel, index:Int = -1) {
-		if(index == -1) { index = audios.indexOf(audio); }
-		audios.remove(audio);
+	public function endChannel(instance:AudioInstance, index:Int = -1) {
+		if(index == -1) { index = instances.indexOf(instance); }
+		instances.remove(instance);
 		audioTimes.splice(index, 1);
 		audioTimesEnd.splice(index, 1);
 	}
 	
-	public function playSound(sound:Sound, volume:Float = 1, loop:Bool = false):AudioChannel {
+	public function playSound(sound:Sound, volume:Float = 1, loop:Bool = false):AudioInstance {
 		return playSoundSection(sound, -1, volume, loop);
 	}
 	
-	public function playSoundSection(sound:Sound, end:Float, volume:Float = 1, loop:Bool = false):AudioChannel {
-		var audio:AudioChannel = Audio1.play(sound, loop);
-		if(audio != null) {
-			audio.volume = volume;
-			audios.push(audio);
+	public function playSoundSection(sound:Sound, end:Float, volume:Float = 1, loop:Bool = false):AudioInstance {
+		var instance:AudioInstance = new AudioInstance(sound, loop, volume);
+		if(instance.channel != null) {
+			instance.channel.volume = volume * masterVolume;
+			instances.push(instance);
 			audioTimes.push(0);
 			audioTimesEnd.push(end);
 		}
-		return audio;
+		return instance;
 	}
 	
 	public function pauseAll() {
-		for (audio in audios) {
-			audio.pause();
+		for (instance in instances) {
+			instance.channel.pause();
 		}
 	}
 	
 	public function resumeAll() {
-		for (audio in audios) {
-			audio.play();
-		}		
+		for (instance in instances) {
+			instance.channel.play();
+		}
+	}
+	
+	public function set_masterVolume(value:Float):Float {
+		for (instance in instances) {
+			instance.channel.volume = value * instance.originalVolume;
+		}
+		return masterVolume = value;
 	}
 	
 }
