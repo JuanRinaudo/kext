@@ -36,10 +36,7 @@ class BasicMesh {
 
 	public var transform:Transform3D;
 
-	public static var VERTEX_OFFSET:Int = 0;
-	public static var NORMAL_OFFSET:Int = 3;
-	public static var UV_OFFSET:Int = 6;
-	public static var COLOR_OFFSET:Int = 8;
+	public var texture:Image;
 
 	public function new(vertexCount:Int, indexCount:Int, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
 		if(vertexUsage == null) { vertexUsage = Usage.StaticUsage; }
@@ -66,31 +63,10 @@ class BasicMesh {
 		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix));
 		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
 		backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix));
+		if(texture != null) {
+			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
+		}
 		backbuffer.g4.drawIndexedVertices();
-	}
-
-	public inline function translate(deltaPosition:Vector3) {
-		transform.translate(deltaPosition);
-	}
-
-	public inline function rotate(deltaRotation:Vector3) {
-		transform.rotate(deltaRotation);
-	}
-
-	public inline function scale(deltaScale:Vector3) {
-		transform.scaleTransform(deltaScale);
-	}
-
-	public inline function setPosition(newPosition:Vector3) {
-		transform.setPosition(newPosition);
-	}
-
-	public inline function setRotation(newRotation:Vector3) {
-		transform.setRotation(newRotation);
-	}
-
-	public inline function setSize(newSize:Vector3) {
-		transform.setScale(newSize);
 	}
 
 	public inline function addTriangle(v1:Vector3, v2:Vector3, v3:Vector3, n1:Vector3, n2:Vector3, n3:Vector3,
@@ -147,25 +123,25 @@ class BasicMesh {
 	}
 
 	private inline function setVertex(vertexes:Float32Array, baseIndex:Int, vector:Vector3, normal:Vector3, uv:Vector2, color:Color) {
-		vertexes.set(baseIndex + VERTEX_OFFSET + 0, vector.x);
-		vertexes.set(baseIndex + VERTEX_OFFSET + 1, vector.y);
-		vertexes.set(baseIndex + VERTEX_OFFSET + 2, vector.z);
-		vertexes.set(baseIndex + NORMAL_OFFSET + 0, normal.x);
-		vertexes.set(baseIndex + NORMAL_OFFSET + 1, normal.y);
-		vertexes.set(baseIndex + NORMAL_OFFSET + 2, normal.z);
-		vertexes.set(baseIndex + UV_OFFSET + 0, uv.x);
-		vertexes.set(baseIndex + UV_OFFSET + 1, uv.y);
-		vertexes.set(baseIndex + COLOR_OFFSET + 0, color.R);
-		vertexes.set(baseIndex + COLOR_OFFSET + 1, color.G);
-		vertexes.set(baseIndex + COLOR_OFFSET + 2, color.B);
-		vertexes.set(baseIndex + COLOR_OFFSET + 3, color.A);
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, vector.x);
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, vector.y);
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, vector.z);
+		vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, normal.x);
+		vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, normal.y);
+		vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, normal.z);
+		vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, uv.x);
+		vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, uv.y);
+		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, color.R);
+		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, color.G);
+		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
+		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, color.A);
 	}
 	
 	public static inline function getSTLMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
 		var objMeshData = STLMeshLoader.parse(blob);
-		var mesh:BasicMesh = BasicMesh.fromSTLData(objMeshData, structure);
+		var mesh:BasicMesh = fromSTLData(objMeshData, structure);
 		if(color != null) {
-			BasicMesh.setAllVertexesColor(mesh, structure, color);
+			setAllVertexesColor(mesh.vertexBuffer, structure, color);
 		}
 		return mesh;
 	}
@@ -182,14 +158,14 @@ class BasicMesh {
 
 			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
 			
-			vertexes.set(baseIndex + VERTEX_OFFSET + 0, data.vertexes.get(i * 3 + 0));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 1, data.vertexes.get(i * 3 + 1));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 2, data.vertexes.get(i * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
 			
 			normalIndex = Math.floor(i / 3);
-			vertexes.set(baseIndex + NORMAL_OFFSET + 0, data.normals.get(normalIndex * 3 + 0));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 1, data.normals.get(normalIndex * 3 + 1));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 2, data.normals.get(normalIndex * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[normalIndex * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[normalIndex * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[normalIndex * 3 + 2]);
 		}
 		mesh.vertexBuffer.unlock();
 		
@@ -208,9 +184,9 @@ class BasicMesh {
 
 	public static inline function getOBJMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
 		var objMeshData = OBJMeshLoader.parse(blob);
-		var mesh:BasicMesh = BasicMesh.fromOBJData(objMeshData, structure);
+		var mesh:BasicMesh = fromOBJData(objMeshData, structure);
 		if(color != null) {
-			BasicMesh.setAllVertexesColor(mesh, structure, color);
+			setAllVertexesColor(mesh.vertexBuffer, structure, color);
 		}
 		return mesh;
 	}
@@ -227,16 +203,16 @@ class BasicMesh {
 			
 			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
 			
-			vertexes.set(baseIndex + VERTEX_OFFSET + 0, data.vertexes.get(i * 3 + 0));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 1, data.vertexes.get(i * 3 + 1));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 2, data.vertexes.get(i * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
 			
-			vertexes.set(baseIndex + UV_OFFSET + 0, data.uvs.get(i * 2 + 0));
-			vertexes.set(baseIndex + UV_OFFSET + 1, data.uvs.get(i * 2 + 1));
+			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, data.uvs[i * 2 + 0]);
+			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, data.uvs[i * 2 + 1]);
 			
-			vertexes.set(baseIndex + NORMAL_OFFSET + 0, data.normals.get(i * 3 + 0));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 1, data.normals.get(i * 3 + 1));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 2, data.normals.get(i * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[i * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[i * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[i * 3 + 2]);
 		}
 		mesh.vertexBuffer.unlock();
 		
@@ -261,28 +237,32 @@ class BasicMesh {
 		var vertexes = mesh.vertexBuffer.lock();
 		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
 		var baseIndex:Int = 0;
-		var normalIndex:Int = 0;
 		for(i in 0...geometry.vertexCount) {
 			baseIndex = i * vertexStep;
 			
 			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
 			
-			vertexes.set(baseIndex + VERTEX_OFFSET + 0, geometry.vertexes.get(i * 3 + 0));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 1, geometry.vertexes.get(i * 3 + 1));
-			vertexes.set(baseIndex + VERTEX_OFFSET + 2, geometry.vertexes.get(i * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, geometry.vertexes[i * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, geometry.vertexes[i * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, geometry.vertexes[i * 3 + 2]);
 			
-			vertexes.set(baseIndex + UV_OFFSET + 0, geometry.uvs.get(i * 2 + 0));
-			vertexes.set(baseIndex + UV_OFFSET + 1, geometry.uvs.get(i * 2 + 1));
+			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, geometry.uvs != null ? geometry.uvs[i * 2 + 0] : 0);
+			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, geometry.uvs != null ? 1 - geometry.uvs[i * 2 + 1] : 0);
 			
-			vertexes.set(baseIndex + NORMAL_OFFSET + 0, geometry.normals.get(i * 3 + 0));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 1, geometry.normals.get(i * 3 + 1));
-			vertexes.set(baseIndex + NORMAL_OFFSET + 2, geometry.normals.get(i * 3 + 2));
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, geometry.colors != null ? geometry.colors[i * 3 + 0] : 0);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, geometry.colors != null ? geometry.colors[i * 3 + 1] : 0);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, geometry.colors != null ? geometry.colors[i * 3 + 2] : 0);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, 1);
+			
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, geometry.normals[i * 3 + 0]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, geometry.normals[i * 3 + 1]);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, geometry.normals[i * 3 + 2]);
 		}
 		mesh.vertexBuffer.unlock();
 		
 		var indexes = mesh.indexBuffer.lock();
 		for(i in 0...geometry.triangleCount * 3) {
-			indexes.set(i, Math.floor(geometry.indices.get(i)));
+			indexes.set(i, Math.floor(geometry.indices[i]));
 		}
 		mesh.indexBuffer.unlock();
 
@@ -293,15 +273,15 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static inline function getOGEXMeshes(blob:Blob, structure:VertexStructure, color:Color = null):Array<BasicMesh> {
+	public static function getOGEXMeshes(blob:Blob, structure:VertexStructure, color:Color = null):Array<BasicMesh> {
 		var ogexMeshData = OGEXMeshLoader.parse(blob);
 		var meshes:Array<BasicMesh> = [];
 		var mesh:BasicMesh = null;
 		for(node in ogexMeshData.geometryNodes) {
-			mesh = BasicMesh.fromOGEXGeometry(ogexMeshData.getGeometry(node.geometryName), structure);
-			mesh.transform.fromMatrix(node.transform);
+			mesh = fromOGEXGeometry(ogexMeshData.getGeometry(node.geometryName), structure);
+            mesh.transform.fromMatrix(node.transform);
 			if(color != null) {
-				BasicMesh.setAllVertexesColor(mesh, structure, color);
+				setAllVertexesColor(mesh.vertexBuffer, structure, color);
 			}
 			meshes.push(mesh);
 		}
@@ -312,14 +292,14 @@ class BasicMesh {
 		return getOGEXMeshes(blob, structure, color)[id];
 	}
 
-	private static inline function setAllVertexDataValue(vertexes:Float32Array, offset:Int, size:Int, value:Float) {
+	public static inline function setAllVertexDataValue(vertexes:Float32Array, offset:Int, size:Int, value:Float) {
 		for(i in 0...size) {
 			vertexes.set(offset + i, 0);
 		}
 	}
 
-	public static function setAllVertexesColor(mesh:BasicMesh, structure:VertexStructure, color:Color) {
-		var vertexes = mesh.vertexBuffer.lock();
+	public static function setAllVertexesColor(vertexBuffer:VertexBuffer, structure:VertexStructure, color:Color) {
+		var vertexes = vertexBuffer.lock();
 		if(vertexes.length == 0) {
 			trace("Cant color vertexes, no vertexes found");
 			return;
@@ -329,12 +309,12 @@ class BasicMesh {
 		for(i in 0...vertexes.length) {
 			baseIndex = i * vertexStep;
 
-			vertexes.set(baseIndex + COLOR_OFFSET + 0, color.R);
-			vertexes.set(baseIndex + COLOR_OFFSET + 1, color.G);
-			vertexes.set(baseIndex + COLOR_OFFSET + 2, color.B);
-			vertexes.set(baseIndex + COLOR_OFFSET + 3, color.A);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, color.R);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, color.G);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, color.A);
 		}
-		mesh.vertexBuffer.unlock();
+		vertexBuffer.unlock();
 	}
 
 	public function get_modelMatrix():FastMatrix4 {

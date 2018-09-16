@@ -51,10 +51,10 @@ class BasicPipeline extends PipelineState {
 		super();
 
 		vertexStructure = new VertexStructure();
-		vertexStructure.add("position", VertexData.Float3);
-		vertexStructure.add("normal", VertexData.Float3);
-		vertexStructure.add("texuv", VertexData.Float2);
-		vertexStructure.add("color", VertexData.Float4);
+		addVertexData(G4Constants.VERTEX_DATA_POSITION, VertexData.Float3);
+		addVertexData(G4Constants.VERTEX_DATA_NORMAL, VertexData.Float3);
+		addVertexData(G4Constants.VERTEX_DATA_TEXUV, VertexData.Float2);
+		addVertexData(G4Constants.VERTEX_DATA_COLOR, VertexData.Float4);
 
 		this.vertexShader = vertexShader;
 		this.fragmentShader = fragmentShader;
@@ -123,14 +123,14 @@ class BasicPipeline extends PipelineState {
 		inputLayout = [vertexStructure];
 		super.compile();
 
-		locationMVPMatrix = getConstantLocation("MVP_MATRIX");
-		locationModelMatrix = getConstantLocation("MODEL_MATRIX");
-		locationViewMatrix = getConstantLocation("VIEW_MATRIX");
-		locationProjectionMatrix = getConstantLocation("PROJECTION_MATRIX");
-		locationProjectionViewMatrix = getConstantLocation("VP_MATRIX");
-		locationNormalMatrix = getConstantLocation("NORMAL_MATRIX");
+		locationMVPMatrix = getConstantLocation(G4Constants.MVP_MATRIX);
+		locationModelMatrix = getConstantLocation(G4Constants.MODEL_MATRIX);
+		locationViewMatrix = getConstantLocation(G4Constants.VIEW_MATRIX);
+		locationProjectionMatrix = getConstantLocation(G4Constants.PROJECTION_MATRIX);
+		locationProjectionViewMatrix = getConstantLocation(G4Constants.PROJECTION_VIEW_MATRIX);
+		locationNormalMatrix = getConstantLocation(G4Constants.NORMAL_MATRIX);
 
-		textureUnit = getTextureUnit("TEXTURE");
+		textureUnit = getTextureUnit(G4Constants.TEXTURE);
 	}
 
 	public inline function setDefaultTextureUnitParameters(backbuffer:Image, unit:TextureUnit) {
