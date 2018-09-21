@@ -301,10 +301,10 @@ class OGEXMeshLoader {
 	private static inline function parseValueFloat16(line:String):FastMatrix4 {
 		var valuesString:Array<String> = getSubstring(line, "{", "}").value.split(",");
 		return new FastMatrix4(
-			Std.parseFloat(valuesString[0]), Std.parseFloat(valuesString[1]), Std.parseFloat(valuesString[2]), Std.parseFloat(valuesString[3]),
-			Std.parseFloat(valuesString[4]), Std.parseFloat(valuesString[5]), Std.parseFloat(valuesString[6]), Std.parseFloat(valuesString[7]),
-			Std.parseFloat(valuesString[8]), Std.parseFloat(valuesString[9]), Std.parseFloat(valuesString[10]), Std.parseFloat(valuesString[11]),
-			Std.parseFloat(valuesString[12]), Std.parseFloat(valuesString[13]), Std.parseFloat(valuesString[14]), Std.parseFloat(valuesString[15])
+			Std.parseFloat(valuesString[0]), Std.parseFloat(valuesString[4]), Std.parseFloat(valuesString[8]), Std.parseFloat(valuesString[12]),
+			Std.parseFloat(valuesString[1]), Std.parseFloat(valuesString[5]), Std.parseFloat(valuesString[9]), Std.parseFloat(valuesString[13]),
+			Std.parseFloat(valuesString[2]), Std.parseFloat(valuesString[6]), Std.parseFloat(valuesString[10]), Std.parseFloat(valuesString[14]),
+			Std.parseFloat(valuesString[3]), Std.parseFloat(valuesString[7]), Std.parseFloat(valuesString[11]), Std.parseFloat(valuesString[15])
 		);
 	}
 
@@ -346,26 +346,26 @@ class OGEXMeshLoader {
 		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
 		var floatSplit = line.split(",");
 		transform._00 = Std.parseFloat(floatSplit[0]);
-		transform._10 = Std.parseFloat(floatSplit[1]);
-		transform._20 = Std.parseFloat(floatSplit[2]);
-		transform._30 = Std.parseFloat(floatSplit[3]);
+		transform._01 = Std.parseFloat(floatSplit[1]);
+		transform._02 = Std.parseFloat(floatSplit[2]);
+		transform._03 = Std.parseFloat(floatSplit[3]);
 		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
 		var floatSplit = line.split(",");
-		transform._01 = Std.parseFloat(floatSplit[0]);
+		transform._10 = Std.parseFloat(floatSplit[0]);
 		transform._11 = Std.parseFloat(floatSplit[1]);
-		transform._21 = Std.parseFloat(floatSplit[2]);
-		transform._31 = Std.parseFloat(floatSplit[3]);
+		transform._12 = Std.parseFloat(floatSplit[2]);
+		transform._13 = Std.parseFloat(floatSplit[3]);
 		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
 		var floatSplit = line.split(",");
-		transform._02 = Std.parseFloat(floatSplit[0]);
-		transform._12 = Std.parseFloat(floatSplit[1]);
+		transform._20 = Std.parseFloat(floatSplit[0]);
+		transform._21 = Std.parseFloat(floatSplit[1]);
 		transform._22 = Std.parseFloat(floatSplit[2]);
-		transform._32 = Std.parseFloat(floatSplit[3]);
+		transform._23 = Std.parseFloat(floatSplit[3]);
 		var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
 		var floatSplit = line.split(",");
-		transform._03 = Std.parseFloat(floatSplit[0]);
-		transform._13 = Std.parseFloat(floatSplit[1]);
-		transform._23 = Std.parseFloat(floatSplit[2]);
+		transform._30 = Std.parseFloat(floatSplit[0]);
+		transform._31 = Std.parseFloat(floatSplit[1]);
+		transform._32 = Std.parseFloat(floatSplit[2]);
 		transform._33 = Std.parseFloat(floatSplit[3]);
 		input.readLine();
 		input.readLine();
@@ -563,10 +563,10 @@ class OGEXMeshLoader {
 			var line = StringTools.replace(StringTools.replace(input.readLine(), "{", ""), "}", "");
 			var floatSplit = line.split(",");
 			var transform = new FastMatrix4(
-				Std.parseFloat(floatSplit[0]), Std.parseFloat(floatSplit[1]), Std.parseFloat(floatSplit[2]), Std.parseFloat(floatSplit[3]),
-				Std.parseFloat(floatSplit[4]), Std.parseFloat(floatSplit[5]), Std.parseFloat(floatSplit[6]), Std.parseFloat(floatSplit[7]),
-				Std.parseFloat(floatSplit[8]), Std.parseFloat(floatSplit[9]), Std.parseFloat(floatSplit[10]), Std.parseFloat(floatSplit[11]),
-				Std.parseFloat(floatSplit[12]), Std.parseFloat(floatSplit[13]), Std.parseFloat(floatSplit[14]), Std.parseFloat(floatSplit[15])
+				Std.parseFloat(floatSplit[0]), Std.parseFloat(floatSplit[4]), Std.parseFloat(floatSplit[8]), Std.parseFloat(floatSplit[12]),
+				Std.parseFloat(floatSplit[1]), Std.parseFloat(floatSplit[5]), Std.parseFloat(floatSplit[9]), Std.parseFloat(floatSplit[13]),
+				Std.parseFloat(floatSplit[2]), Std.parseFloat(floatSplit[6]), Std.parseFloat(floatSplit[10]), Std.parseFloat(floatSplit[14]),
+				Std.parseFloat(floatSplit[3]), Std.parseFloat(floatSplit[7]), Std.parseFloat(floatSplit[11]), Std.parseFloat(floatSplit[15])
 			);
 			transforms.push(transform);
 		}

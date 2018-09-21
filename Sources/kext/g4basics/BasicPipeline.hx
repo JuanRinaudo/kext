@@ -54,7 +54,7 @@ class BasicPipeline extends PipelineState {
 		addVertexData(G4Constants.VERTEX_DATA_POSITION, VertexData.Float3);
 		addVertexData(G4Constants.VERTEX_DATA_NORMAL, VertexData.Float3);
 		addVertexData(G4Constants.VERTEX_DATA_TEXUV, VertexData.Float2);
-		addVertexData(G4Constants.VERTEX_DATA_COLOR, VertexData.Float4);
+		addVertexData(G4Constants.VERTEX_DATA_COLOR, VertexData.Float3);
 
 		this.vertexShader = vertexShader;
 		this.fragmentShader = fragmentShader;

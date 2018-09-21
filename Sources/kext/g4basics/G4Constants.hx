@@ -12,8 +12,8 @@ class G4Constants {
 	public static var NORMAL_OFFSET:Int = 3;
 	public static var UV_OFFSET:Int = 6;
 	public static var COLOR_OFFSET:Int = 8;
-	public static var JOINT_INDEX_OFFSET:Int = 12;
-	public static var JOINT_WEIGHT_OFFSET:Int = 16;
+	public static var JOINT_INDEX_OFFSET:Int = 11;
+	public static var JOINT_WEIGHT_OFFSET:Int = 15;
 
     public static var MAX_BONES:Int = 50;
 

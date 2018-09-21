@@ -134,7 +134,6 @@ class BasicMesh {
 		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, color.R);
 		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, color.G);
 		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
-		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, color.A);
 	}
 	
 	public static inline function getSTLMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
@@ -155,8 +154,6 @@ class BasicMesh {
 		var normalIndex:Int = 0;
 		for(i in 0...data.vertexCount) {
 			baseIndex = i * vertexStep;
-
-			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
 			
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
@@ -201,8 +198,6 @@ class BasicMesh {
 		for(i in 0...data.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
-			
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
@@ -240,8 +235,6 @@ class BasicMesh {
 		for(i in 0...geometry.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
-			
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, geometry.vertexes[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, geometry.vertexes[i * 3 + 1]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, geometry.vertexes[i * 3 + 2]);
@@ -252,7 +245,6 @@ class BasicMesh {
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, geometry.colors != null ? geometry.colors[i * 3 + 0] : 0);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, geometry.colors != null ? geometry.colors[i * 3 + 1] : 0);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, geometry.colors != null ? geometry.colors[i * 3 + 2] : 0);
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, 1);
 			
 			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, geometry.normals[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, geometry.normals[i * 3 + 1]);
@@ -292,12 +284,6 @@ class BasicMesh {
 		return getOGEXMeshes(blob, structure, color)[id];
 	}
 
-	public static inline function setAllVertexDataValue(vertexes:Float32Array, offset:Int, size:Int, value:Float) {
-		for(i in 0...size) {
-			vertexes.set(offset + i, 0);
-		}
-	}
-
 	public static function setAllVertexesColor(vertexBuffer:VertexBuffer, structure:VertexStructure, color:Color) {
 		var vertexes = vertexBuffer.lock();
 		if(vertexes.length == 0) {
@@ -312,7 +298,6 @@ class BasicMesh {
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, color.R);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, color.G);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, color.A);
 		}
 		vertexBuffer.unlock();
 	}

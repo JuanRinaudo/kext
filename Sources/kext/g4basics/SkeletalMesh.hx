@@ -49,6 +49,8 @@ class SkeletalMesh {
 	public var animationBuffer:Float32Array;
 	public var mainNode:Node;
 
+	public var fps:Float = 30;
+
 	public function new(vertexCount:Int, indexCount:Int, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
 		if(vertexUsage == null) { vertexUsage = Usage.StaticUsage; }
 		if(indexUsage == null) { indexUsage = Usage.StaticUsage; }
@@ -77,7 +79,7 @@ class SkeletalMesh {
 		if(texture != null) {
 			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
 		}
-		calculateTransformsFloatArray(mainNode.rootNode, FastMatrix4.identity());
+		calculateTransformsFloatArray(mainNode.rootNode, mainNode.rootNode.transform);
 		backbuffer.g4.setFloats(pipeline.getConstantLocation(G4Constants.JOINT_TRANSFORMS), animationBuffer);
 		backbuffer.g4.drawIndexedVertices();
 	}
@@ -92,8 +94,6 @@ class SkeletalMesh {
 		for(i in 0...geometry.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			BasicMesh.setAllVertexDataValue(vertexes, baseIndex, vertexStep, 0);
-			
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, geometry.vertexes[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, geometry.vertexes[i * 3 + 1]);
 			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, geometry.vertexes[i * 3 + 2]);
@@ -104,7 +104,6 @@ class SkeletalMesh {
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, geometry.colors != null ? geometry.colors[i * 3 + 0] : 0);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, geometry.colors != null ? geometry.colors[i * 3 + 1] : 0);
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, geometry.colors != null ? geometry.colors[i * 3 + 2] : 0);
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 3, 1);
 
 			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, geometry.normals[i * 3 + 0]);
 			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, geometry.normals[i * 3 + 1]);
@@ -172,15 +171,14 @@ class SkeletalMesh {
 		var passTransform:FastMatrix4;
 		var bindTransform:FastMatrix4 = boneTransform.get(currentNode.key);
 		var animationIndex = boneIndex.get(currentNode.key);
-		// if(currentNode.animation != null) {
-		// 	var int:Int = Math.floor((kext.Application.time * 30) % currentNode.animation.track.values.length);
-		// 	finalTransform = currentNode.animation.track.values[int];
-		// } else {
-		// 	finalTransform = bindTransform;
-		// }
-		finalTransform = bindTransform;
+		if(currentNode.animation != null) {
+			var int:Int = Math.floor((kext.Application.time * fps) % currentNode.animation.track.values.length);
+			finalTransform = currentNode.animation.track.values[int];
+		} else {
+			finalTransform = bindTransform;
+		}
 		passTransform = parentTransform.multmat(finalTransform);
-		// finalTransform = passTransform.multmat(bindTransform.inverse());
+		finalTransform = passTransform.multmat(bindTransform.inverse());
 		animationBuffer.set(animationIndex + 0, finalTransform._00);
 		animationBuffer.set(animationIndex + 1, finalTransform._01);
 		animationBuffer.set(animationIndex + 2, finalTransform._02);
