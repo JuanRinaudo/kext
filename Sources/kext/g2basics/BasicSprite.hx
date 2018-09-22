@@ -26,7 +26,7 @@ class BasicSprite extends Basic {
 
 	public var exists:Bool;
 
-	public function new(x:Float, y:Float, spriteImage:Image) {
+	public function new(x:Float, y:Float, spriteImage:Image = null) {
 		super();
 
 		transform = Transform2D.fromFloats(x, y, 1, 1, 0);
@@ -50,7 +50,7 @@ class BasicSprite extends Basic {
 
 	override public function render(backbuffer:Image) {
 		backbuffer.g2.color = color;
-		backbuffer.g2.pushTransformation(transform.getMatrix().multmat(backbuffer.g2.transformation));
+		backbuffer.g2.pushTransformation(backbuffer.g2.transformation.multmat(transform.getMatrix()));
 		
 		if(subimage != null) {
 			backbuffer.g2.drawSubImage(image, 0, 0, subimage.x, subimage.y, subimage.width, subimage.height);
