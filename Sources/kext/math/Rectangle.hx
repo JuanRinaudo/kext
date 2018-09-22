@@ -25,7 +25,6 @@ class Rectangle
 	public inline function pointInside(vector:Vector2) {
 		if(vector.x < x || vector.x > x + width) { return false; }
 		if(vector.y < y || vector.y > y + height) { return false; }
-		
 		return true;
 	}
 	

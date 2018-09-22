@@ -95,4 +95,11 @@ class AnimatedSprite extends Basic {
 		return new AnimatedSprite(x, y, ExtAssets.animations.get(animationName), startingFrame);
 	}
 
+	public inline function get_transform():Transform2D {
+		return sprite.transform;
+	}
+	public inline function set_transform(value:Transform2D):Transform2D {
+		return sprite.transform = value;
+	}
+
 }
