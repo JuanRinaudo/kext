@@ -1,7 +1,10 @@
 package kext.g2basics;
 
+import kha.Color;
 import kha.Image;
 import kha.math.Vector2;
+
+import kext.g2basics.Transform2D;
 
 import kext.ExtAssets;
 import kext.loaders.AnimationLoader.AnimationData;
@@ -9,7 +12,6 @@ import kext.loaders.AnimationLoader.AnimationData;
 class AnimatedSprite extends Basic {
 
 	public var sprite:BasicSprite;
-	public var transform(get, set):Transform2D;
 
 	public var lastFrame:Int;
 	public var currentFrame:Int;
@@ -20,8 +22,13 @@ class AnimatedSprite extends Basic {
 	public var animationTime:Float;
 	public var animationRunning:Bool;
 
+	public var color(get, set):Color;
+	public var transform(get, null):Transform2D;
+
 	public function new(x:Float, y:Float, animation:AnimationData = null, startingFrame:Int = 0) {
-		super(x, y, null);
+		super();
+
+		sprite = new BasicSprite(x, y, null);
 
 		originOffset = new Vector2(0, 0);
 
@@ -66,6 +73,22 @@ class AnimatedSprite extends Basic {
 			sprite.setFrame(animation.frames[currentFrame]);
 		}
 		animationRunning = start;
+	}
+
+	override public function render(backbuffer:Image) {
+		sprite.render(backbuffer);
+	}
+
+	public inline function get_transform():Transform2D {
+		return sprite.transform;
+	}
+
+	public inline function get_color():Color {
+		return sprite.color;
+	}
+
+	public inline function set_color(color:Color):Color {
+		return sprite.color = color;
 	}
 
 	public static function fromAnimationName(x:Float, y:Float, animationName:String, startingFrame:Int = 0):AnimatedSprite {

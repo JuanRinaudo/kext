@@ -18,8 +18,8 @@ class Rectangle
 		this.height = height;
 	}
 
-	public inline function scale(x:Float, y:Float) {
-		return new Rectangle(x, y, width * x, height * y);
+	public inline function scale(x:Float, y:Float):Rectangle {
+		return new Rectangle(x * x, y * y, width * x, height * y);
 	}
 
 	public inline function pointInside(vector:Vector2) {

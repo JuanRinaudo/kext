@@ -47,7 +47,7 @@ class BasicTileset extends BasicSprite {
                 if(value != -1) {
                     matrix._20 += j * tileWidth; //Translate
                     matrix._21 += i * tileHeight;
-		            backbuffer.g2.pushTransformation(matrix.multmat(backbuffer.g2.transformation));
+		            backbuffer.g2.pushTransformation(backbuffer.g2.transformation.multmat(matrix));
                     backbuffer.g2.drawSubImage(image, 0, 0, (value % tilesetWidth) * tileWidth, Math.floor(value / tilesetHeight) * tileHeight , tileWidth, tileHeight);
                     backbuffer.g2.popTransformation();
                     matrix._20 -= j * tileWidth; //RestoreTranslation

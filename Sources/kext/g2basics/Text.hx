@@ -60,7 +60,7 @@ class Text extends Basic {
 	}
 
 	override public function render(backbuffer:Image) {
-		backbuffer.g2.pushTransformation(transform.getMatrix().multmat(backbuffer.g2.transformation));
+		backbuffer.g2.pushTransformation(backbuffer.g2.transformation.multmat(transform.getMatrix()));
 		backbuffer.g2.font = font;
 		backbuffer.g2.fontSize = fontSize;
 		backbuffer.g2.color = color;
