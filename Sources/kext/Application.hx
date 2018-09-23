@@ -11,16 +11,15 @@ import kha.Scheduler;
 import kha.System.SystemOptions;
 import kha.Scaler;
 import kha.Shaders;
-import kha.Scaler.TargetRectangle;
 import kha.Window;
 import kha.WindowOptions;
 
 import kha.math.Vector2;
-import kha.math.FastVector2;
 import kha.math.FastMatrix3;
 
 import kext.ExtAssets;
 
+import kext.g4basics.Camera3D;
 import kext.g4basics.BasicPipeline;
 
 import kext.input.GamepadInput;
@@ -120,6 +119,8 @@ class Application {
 	public static var platform:Platform;
 	// public static var services:PlatformServices;
 
+	public static var mainCamera:Camera3D;
+
 	public static var onApplicationStart:Signal<ApplicationStartEvent> = new Signal();
 	public static var onApplicationEnd:Signal<ApplicationEndEvent> = new Signal();
 	public static var onLoadComplete:Signal<LoadCompleteEvent> = new Signal();
@@ -140,8 +141,9 @@ class Application {
 	public static var defaultFont(default, null):Font;
 	public static var defaultFontSize:Int;
 
+#if debug
 	private var debug:Debug;
-
+#end
 	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
 		this.systemOptions = defaultSystemOptions(systemOptions);
 		windowOptions = defaultWindowOptions(systemOptions.window);
@@ -185,8 +187,9 @@ class Application {
 	}
 
 	private function onStart(window:Window) {
+#if debug
 		debug = new Debug();
-
+#end
 		gamepad = new GamepadInput();
 		keyboard = new KeyboardInput();
 		mouse = new MouseInput();
@@ -215,8 +218,6 @@ class Application {
 		Assets.loadEverything(loadCompleteHandler);
 
 		onApplicationStart.dispatch();
-
-		// gamecenter.GameCenter.init();
 	}
 
 	private function createBuffers(width:Int, height:Int) {
@@ -300,9 +301,9 @@ class Application {
 			Scaler.scale(postbackbuffer, backbuffer, System.screenRotation);
 			backbuffer.g2.end();
 		}
-
+#if debug
 		debug.render(backbuffer);
-		
+#end
 		if (paused) {
 			backbuffer.g2.begin(false);
 
@@ -375,9 +376,10 @@ class Application {
 			time += options.updatePeriod;
 			currentState.update(options.updatePeriod);
 		}
-
-		platform.update(options.updatePeriod);
+#if debug
 		debug.update(options.updatePeriod);
+#end
+		platform.update(options.updatePeriod);
 
 		gamepad.update(options.updatePeriod);
 		keyboard.update(options.updatePeriod);

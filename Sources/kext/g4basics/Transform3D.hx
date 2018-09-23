@@ -45,9 +45,7 @@ class Transform3D {
 		if(_scale == null) { _scale = new Vector3(1, 1, 1); }
 		if(_origin == null) { _origin = new Vector3(0, 0, 0); }
 		if(_rotation == null) { _rotation = new Vector3(0, 0, 0); }
-		// if(rotation == null) { rotation = eulerToQuaternion(new Vector3(0, 0, 0)); }	
-		// _rotation = rotation;
-
+	
 		transform = FastMatrix4.identity();
 		dirty = true;
 	}
