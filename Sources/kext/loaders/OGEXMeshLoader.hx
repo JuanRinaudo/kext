@@ -21,7 +21,7 @@ typedef OGEXNode = {
 
 typedef Node = { > OGEXNode,
 	transform:FastMatrix4,
-	rootNode:BoneNode
+	bones:Array<BoneNode>
 }
 
 typedef BoneNode = { > OGEXNode,
@@ -180,7 +180,7 @@ class OGEXMeshLoader {
 	private static inline function parseNode(key:String, input:StringInput):Node {
 		var name:String = "";
 		var transform:FastMatrix4 = null;
-		var root:BoneNode = null;
+		var bones:Array<BoneNode> = [];
 
 		var line:String = input.readLine();
 		var split:Array<String>;
@@ -192,7 +192,8 @@ class OGEXMeshLoader {
 				case "Transform":
 					transform = parseTransform(input);
 				case "BoneNode":
-					root = parseBone(split[1], input);
+					var bone:BoneNode = parseBone(split[1], input);
+					bones.push(bone);
 				case "GeometryObject":
 					var geometry:Geometry = parseGeometry(getKey(split[1]), input);
 				case "GeometryNode":
@@ -205,7 +206,7 @@ class OGEXMeshLoader {
 			key: key,
 			name: name,
 			transform: transform,
-			rootNode: root
+			bones: bones
 		};
 		data.nodes.set(node.key, node);
 		return node; 

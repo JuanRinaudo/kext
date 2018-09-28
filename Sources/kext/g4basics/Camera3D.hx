@@ -19,7 +19,7 @@ class Camera3D extends Basic {
 
     public var transform:Transform3D;
     
-#if js
+#if (js && kha_html5)
 	public var upVector:FastVector3 = new FastVector3(0, 1, 0);
 #else
 	public var upVector:FastVector3 = new FastVector3(0, -1, 0);

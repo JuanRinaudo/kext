@@ -79,7 +79,7 @@ class SkeletalMesh {
 		if(texture != null) {
 			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
 		}
-		calculateTransformsFloatArray(mainNode.rootNode, mainNode.rootNode.transform);
+		calculateSkeletonBones(mainNode);
 		backbuffer.g4.setFloats(pipeline.getConstantLocation(G4Constants.JOINT_TRANSFORMS), animationBuffer);
 		backbuffer.g4.drawIndexedVertices();
 	}
@@ -164,6 +164,12 @@ class SkeletalMesh {
         }
 
 		return mesh;
+	}
+
+	public function calculateSkeletonBones(node:Node) {
+		for(child in node.bones) {
+			calculateTransformsFloatArray(child, FastMatrix4.identity());
+		}
 	}
 
 	public function calculateTransformsFloatArray(currentNode:BoneNode, parentTransform:FastMatrix4) {
