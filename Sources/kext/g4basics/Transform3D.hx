@@ -13,7 +13,7 @@ class Transform3D {
 	public var scale(get, null):Vector3;
 	public var origin(get, null):Vector3;
 	public var rotationEuler(get, null):Vector3;
-	public var rotation(get, null):Vector4;
+	public var rotationQuaternion(get, null):Vector4;
 	private var _position(default, null):Vector3;
 	private var _scale(default, null):Vector3;
 	private var _origin(default, null):Vector3;
@@ -69,7 +69,7 @@ class Transform3D {
 			transform._30 = _position.x - _origin.x * _scale.x;
 			transform._31 = _position.y - _origin.y * _scale.y;
 			transform._32 = _position.z - _origin.z * _scale.z;
-			transform = transform.multmat(FastMatrix4.rotation(rotation.x, rotation.y, rotation.z));
+			transform = transform.multmat(FastMatrix4.rotation(_rotation.x, _rotation.y, _rotation.z));
 			dirty = false;
 		}
 		return transform;
@@ -253,7 +253,7 @@ class Transform3D {
 		return new Vector3(_rotation.x, _rotation.y, _rotation.z);
 	}
 
-	public inline function get_rotation():Vector4 {
+	public inline function get_rotationQuaternion():Vector4 {
 		return MathExt.eulerToQuaternion(_rotation);
 	}
 

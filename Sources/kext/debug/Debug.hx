@@ -44,8 +44,8 @@ class Debug extends Basic {
 	private function loadCompleteHandler() {
 		if(Reflect.hasField(Assets.blobs, "cube_obj")) {
 			var cubeBlob = Reflect.getProperty(Assets.blobs, "cube_obj");
-			cube = BasicMesh.getOBJMesh(cubeBlob, pipeline.vertexStructure, Color.fromFloats(1, 1, 1, 1));
-			cubeBound = BasicMesh.getOBJMesh(cubeBlob, pipeline.vertexStructure, Color.fromFloats(0, 0.7, 0, 0.25));
+			cube = BasicMesh.getOBJMesh(cubeBlob, pipeline, Color.fromFloats(1, 1, 1, 1));
+			cubeBound = BasicMesh.getOBJMesh(cubeBlob, pipeline, Color.fromFloats(0, 0.7, 0, 0.25));
 		}
 	}
 
@@ -56,18 +56,18 @@ class Debug extends Basic {
 
 			cube.transform.setPosition(boundingCube.transform.position.add(boundingCube.v1));
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer, pipeline);
+			cube.drawMesh(backbuffer);
 			cube.transform.setPosition(boundingCube.transform.position.add(boundingCube.v2));
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer, pipeline);
+			cube.drawMesh(backbuffer);
 
 			cube.transform.setPosition(boundingCube.transform.position);
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer, pipeline);
+			cube.drawMesh(backbuffer);
 			
 			cubeBound.transform.setPosition(boundingCube.getCubeCenter());
 			cubeBound.transform.setScale(size);
-			cubeBound.drawMesh(backbuffer, pipeline);
+			cubeBound.drawMesh(backbuffer);
 
 			backbuffer.g4.setPipeline(fromPipeline);
 		}

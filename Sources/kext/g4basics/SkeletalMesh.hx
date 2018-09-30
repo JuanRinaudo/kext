@@ -35,6 +35,8 @@ class SkeletalMesh {
 	public var triangleCount:UInt = 0;
 	public var indexCount:UInt = 0;
 	public var vertexCount:UInt = 0;
+
+	public var pipeline:BasicPipeline;
 	public var vertexStructure:VertexStructure;
 
 	public var modelMatrix(get, null):FastMatrix4;
@@ -51,13 +53,15 @@ class SkeletalMesh {
 
 	public var fps:Float = 30;
 
-	public function new(vertexCount:Int, indexCount:Int, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
+	public function new(vertexCount:Int, indexCount:Int, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
 		if(vertexUsage == null) { vertexUsage = Usage.StaticUsage; }
 		if(indexUsage == null) { indexUsage = Usage.StaticUsage; }
-		vertexBuffer = new VertexBuffer(vertexCount, structure, vertexUsage);
-		indexBuffer = new IndexBuffer(indexCount, indexUsage);
 
-		vertexStructure = structure;
+		this.pipeline = pipeline;
+		vertexStructure = pipeline.vertexStructure;
+
+		vertexBuffer = new VertexBuffer(vertexCount, vertexStructure, vertexUsage);
+		indexBuffer = new IndexBuffer(indexCount, indexUsage);
 
 		animationBuffer = new Float32Array(G4Constants.MAX_BONES * 16);
 		for(i in 0...animationBuffer.length) {
@@ -67,14 +71,16 @@ class SkeletalMesh {
 		transform = new Transform3D();
 	}
 
-	public function drawMesh(backbuffer:Image, pipeline:BasicPipeline, setPipeline:Bool = true) {
+	public function drawMesh(backbuffer:Image, setPipeline:Bool = true) {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
 		backbuffer.g4.setVertexBuffer(vertexBuffer);
 		backbuffer.g4.setIndexBuffer(indexBuffer);
 		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix));
+		backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix);
 		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
+		backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix);
 		backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix));
 		if(texture != null) {
 			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
@@ -84,11 +90,11 @@ class SkeletalMesh {
 		backbuffer.g4.drawIndexedVertices();
 	}
 
-	public static function fromOGEXData(geometry:Geometry, skin:Skin, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
-		var mesh:SkeletalMesh = new SkeletalMesh(geometry.vertexCount, geometry.triangleCount * 3, structure, vertexUsage, indexUsage);
+	public static function fromOGEXData(geometry:Geometry, skin:Skin, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		var mesh:SkeletalMesh = new SkeletalMesh(geometry.vertexCount, geometry.triangleCount * 3, pipeline, vertexUsage, indexUsage);
 
 		var vertexes = mesh.vertexBuffer.lock();
-		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
+		var vertexStep:Int = Math.floor(pipeline.vertexStructure.byteSize() / 4);
 		var baseIndex:Int = 0;
 		var boneIndexOffset:Int = 0;
 		for(i in 0...geometry.vertexCount) {
@@ -136,17 +142,17 @@ class SkeletalMesh {
 		return mesh;
 	}
 
-    public static function getOGEXAnimatedMesh(blob:Blob, structure:VertexStructure, color:Color = null, id:Int = 0):SkeletalMesh {
+    public static function getOGEXAnimatedMesh(blob:Blob, pipeline:BasicPipeline, color:Color = null, id:Int = 0):SkeletalMesh {
 		var ogexMeshData = OGEXMeshLoader.parse(blob);
 		var meshes:Array<SkeletalMesh> = [];
 		var mesh:SkeletalMesh = null;
 		for(node in ogexMeshData.geometryNodes) {
 			var skin:Skin = ogexMeshData.getSkin(node.geometryName);
 			var geometry:Geometry = ogexMeshData.getGeometry(node.geometryName);
-			mesh = fromOGEXData(geometry, skin, structure);
+			mesh = fromOGEXData(geometry, skin, pipeline);
             mesh.transform.fromMatrix(node.transform);
 			if(color != null) {
-				BasicMesh.setAllVertexesColor(mesh.vertexBuffer, structure, color);
+				BasicMesh.setAllVertexesColor(mesh.vertexBuffer, pipeline.vertexStructure, color);
 			}
 			mesh.mainNode = ogexMeshData.getNode("$node1");
 			mesh.boneIndex = new Map<String, Int>();

@@ -1,5 +1,7 @@
 package kext.g4basics;
 
+import haxe.xml.Fast;
+import kext.platform.IPlatformServices.PlatformConfig;
 import kha.Color;
 import kha.Image;
 import kha.Blob;
@@ -30,6 +32,8 @@ class BasicMesh {
 	public var triangleCount:UInt = 0;
 	public var indexCount:UInt = 0;
 	public var vertexCount:UInt = 0;
+
+	public var pipeline:BasicPipeline;
 	public var vertexStructure:VertexStructure;
 
 	public var modelMatrix(get, null):FastMatrix4;
@@ -38,13 +42,16 @@ class BasicMesh {
 
 	public var texture:Image;
 
-	public function new(vertexCount:Int, indexCount:Int, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
-		if(vertexUsage == null) { vertexUsage = Usage.StaticUsage; }
-		if(indexUsage == null) { indexUsage = Usage.StaticUsage; }
-		vertexBuffer = new VertexBuffer(vertexCount, structure, vertexUsage);
+	public function new(vertexCount:Int, indexCount:Int, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		if(vertexUsage == null) { vertexUsage = Usage.DynamicUsage; }
+		if(indexUsage == null) { indexUsage = Usage.DynamicUsage; }
+		
+		this.pipeline = pipeline;
+		vertexStructure = pipeline.vertexStructure;
+
+		vertexBuffer = new VertexBuffer(vertexCount, vertexStructure, vertexUsage);
 		indexBuffer = new IndexBuffer(indexCount, indexUsage);
 
-		vertexStructure = structure;
 
 		transform = new Transform3D();
 	}
@@ -54,14 +61,16 @@ class BasicMesh {
 		backbuffer.g4.setIndexBuffer(indexBuffer);
 	}
 	
-	public inline function drawMesh(backbuffer:Image, pipeline:BasicPipeline, setPipeline:Bool = true) {
+	public inline function drawMesh(backbuffer:Image, setPipeline:Bool = true) {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
 		backbuffer.g4.setVertexBuffer(vertexBuffer);
 		backbuffer.g4.setIndexBuffer(indexBuffer);
 		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix));
+		backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix);
 		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
+		backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix);
 		backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix));
 		if(texture != null) {
 			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
@@ -136,20 +145,20 @@ class BasicMesh {
 		vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
 	}
 	
-	public static inline function getSTLMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
+	public static inline function getSTLMesh(blob:Blob, pipeline:BasicPipeline, color:Color = null):BasicMesh {
 		var objMeshData = STLMeshLoader.parse(blob);
-		var mesh:BasicMesh = fromSTLData(objMeshData, structure);
+		var mesh:BasicMesh = fromSTLData(objMeshData, pipeline);
 		if(color != null) {
-			setAllVertexesColor(mesh.vertexBuffer, structure, color);
+			setAllVertexesColor(mesh.vertexBuffer, pipeline.vertexStructure, color);
 		}
 		return mesh;
 	}
 
-	public static function fromSTLData(data:STLMeshData, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null):BasicMesh {
-		var mesh:BasicMesh = new BasicMesh(data.vertexCount, data.triangleCount * 3, structure, vertexUsage, indexUsage);
+	public static function fromSTLData(data:STLMeshData, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null):BasicMesh {
+		var mesh:BasicMesh = new BasicMesh(data.vertexCount, data.triangleCount * 3, pipeline, vertexUsage, indexUsage);
 		
 		var vertexes = mesh.vertexBuffer.lock();
-		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
+		var vertexStep:Int = Math.floor(pipeline.vertexStructure.byteSize() / 4);
 		var baseIndex:Int = 0;
 		var normalIndex:Int = 0;
 		for(i in 0...data.vertexCount) {
@@ -179,20 +188,20 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static inline function getOBJMesh(blob:Blob, structure:VertexStructure, color:Color = null):BasicMesh {
+	public static inline function getOBJMesh(blob:Blob, pipeline:BasicPipeline, color:Color = null):BasicMesh {
 		var objMeshData = OBJMeshLoader.parse(blob);
-		var mesh:BasicMesh = fromOBJData(objMeshData, structure);
+		var mesh:BasicMesh = fromOBJData(objMeshData, pipeline);
 		if(color != null) {
-			setAllVertexesColor(mesh.vertexBuffer, structure, color);
+			setAllVertexesColor(mesh.vertexBuffer, pipeline.vertexStructure, color);
 		}
 		return mesh;
 	}
 
-	public static function fromOBJData(data:OBJMeshData, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
-		var mesh:BasicMesh = new BasicMesh(data.vertexCount, data.triangleCount * 3, structure, vertexUsage, indexUsage);
+	public static function fromOBJData(data:OBJMeshData, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		var mesh:BasicMesh = new BasicMesh(data.vertexCount, data.triangleCount * 3, pipeline, vertexUsage, indexUsage);
 
 		var vertexes = mesh.vertexBuffer.lock();
-		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
+		var vertexStep:Int = Math.floor(pipeline.vertexStructure.byteSize() / 4);
 		var baseIndex:Int = 0;
 		var normalIndex:Int = 0;
 		for(i in 0...data.vertexCount) {
@@ -224,13 +233,13 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static function fromOGEXGeometry(geometry:Geometry, structure:VertexStructure, vertexUsage:Usage = null, indexUsage:Usage = null) {
+	public static function fromOGEXGeometry(geometry:Geometry, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
 		var geometry = geometry;
 		
-		var mesh:BasicMesh = new BasicMesh(geometry.vertexCount, geometry.triangleCount * 3, structure, vertexUsage, indexUsage);
+		var mesh:BasicMesh = new BasicMesh(geometry.vertexCount, geometry.triangleCount * 3, pipeline, vertexUsage, indexUsage);
 
 		var vertexes = mesh.vertexBuffer.lock();
-		var vertexStep:Int = Math.floor(structure.byteSize() / 4);
+		var vertexStep:Int = Math.floor(pipeline.vertexStructure.byteSize() / 4);
 		var baseIndex:Int = 0;
 		for(i in 0...geometry.vertexCount) {
 			baseIndex = i * vertexStep;
@@ -265,23 +274,23 @@ class BasicMesh {
 		return mesh;
 	}
 
-	public static function getOGEXMeshes(blob:Blob, structure:VertexStructure, color:Color = null):Array<BasicMesh> {
+	public static function getOGEXMeshes(blob:Blob, pipeline:BasicPipeline, color:Color = null):Array<BasicMesh> {
 		var ogexMeshData = OGEXMeshLoader.parse(blob);
 		var meshes:Array<BasicMesh> = [];
 		var mesh:BasicMesh = null;
 		for(node in ogexMeshData.geometryNodes) {
-			mesh = fromOGEXGeometry(ogexMeshData.getGeometry(node.geometryName), structure);
+			mesh = fromOGEXGeometry(ogexMeshData.getGeometry(node.geometryName), pipeline);
             mesh.transform.fromMatrix(node.transform);
 			if(color != null) {
-				setAllVertexesColor(mesh.vertexBuffer, structure, color);
+				setAllVertexesColor(mesh.vertexBuffer, pipeline.vertexStructure, color);
 			}
 			meshes.push(mesh);
 		}
 		return meshes;
 	}
 
-	public static inline function getOGEXMesh(blob:Blob, structure:VertexStructure, color:Color = null, id:Int = 0):BasicMesh {
-		return getOGEXMeshes(blob, structure, color)[id];
+	public static inline function getOGEXMesh(blob:Blob, pipeline:BasicPipeline, color:Color = null, id:Int = 0):BasicMesh {
+		return getOGEXMeshes(blob, pipeline, color)[id];
 	}
 
 	public static function setAllVertexesColor(vertexBuffer:VertexBuffer, structure:VertexStructure, color:Color) {
@@ -300,6 +309,66 @@ class BasicMesh {
 			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
 		}
 		vertexBuffer.unlock();
+	}
+
+	private static inline function addCreateVertex(vertexes:Float32Array, baseIndex:Int, x:Float, y:Float, z:Float, uvx:Float, uvy:Float) {
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, x);
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, y);
+		vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, z);
+		
+		vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, uvx);
+		vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, uvy);
+	}
+
+	public static function createQuadMesh(vector1:Vector3, vector2:Vector3, pipeline:BasicPipeline, color:Color = Color.White):BasicMesh {
+		var mesh:BasicMesh = new BasicMesh(4, 6, pipeline);
+		var midZ:Float = (vector1.z + vector2.z) / 2;
+		var vector3:Vector3 = new Vector3(vector2.x, vector1.y, midZ);
+		var vector4:Vector3 = new Vector3(vector1.x, vector2.y, midZ);
+		var normal:Vector3 = new Vector3(0, 0, 1);
+		
+		var vertexes = mesh.vertexBuffer.lock();
+		var vertexStep:Int = Math.floor(pipeline.vertexStructure.byteSize() / 4);
+		
+		addCreateVertex(vertexes, vertexStep * 0, vector1.x, vector1.y, vector1.z, 0, 0);
+		addCreateVertex(vertexes, vertexStep * 1, vector2.x, vector1.y, vector1.z, 1, 0);
+		addCreateVertex(vertexes, vertexStep * 2, vector1.x, vector2.y, vector1.z, 0, 1);
+		addCreateVertex(vertexes, vertexStep * 3, vector2.x, vector2.y, vector1.z, 1, 1);
+		
+		var baseIndex:Int = 0;
+		for(i in 0...4) {
+			baseIndex = i * vertexStep;
+
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, color.R);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, color.G);
+			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, color.B);
+			
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, 1);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, 0);
+			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, 0);
+		}
+		mesh.vertexBuffer.unlock();
+		
+		var indexes = mesh.indexBuffer.lock();
+		indexes.set(0, 0);
+		indexes.set(1, 1);
+		indexes.set(2, 2);
+		indexes.set(3, 2);
+		indexes.set(4, 1);
+		indexes.set(5, 3);
+		mesh.indexBuffer.unlock();
+
+		mesh.vertexCount = 4;
+		mesh.indexCount = 6;
+		mesh.triangleCount = 2;
+
+		// mesh.addTriangle(vector1, vector3, vector4,
+		// 	normal, normal, normal, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1),
+		// 	color);
+		// mesh.addTriangle(vector4, vector2, vector3,
+		// 	normal, normal, normal, new Vector2(1, 1), new Vector2(0, 1), new Vector2(1, 0),
+		// 	color);
+		return mesh;
 	}
 
 	public function get_modelMatrix():FastMatrix4 {

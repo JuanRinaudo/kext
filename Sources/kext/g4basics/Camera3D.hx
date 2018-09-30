@@ -1,5 +1,6 @@
 package kext.g4basics;
 
+import kha.math.Vector3;
 import kext.g4basics.Transform3D;
 import kha.math.FastMatrix4;
 import kha.math.FastVector3;
@@ -19,11 +20,7 @@ class Camera3D extends Basic {
 
     public var transform:Transform3D;
     
-#if (js && kha_html5)
-	public var upVector:FastVector3 = new FastVector3(0, 1, 0);
-#else
 	public var upVector:FastVector3 = new FastVector3(0, -1, 0);
-#end
 
     public function new() {
         super();
@@ -36,12 +33,13 @@ class Camera3D extends Basic {
         projectionMatrix = null;
     
 		nearPlane = 0.1;
-		farPlane = 100;
+		farPlane = 5000;
 
         transform = new Transform3D();
+		transform.setPosition(new Vector3(0, -10, -10));
 
-		perspective(45, 1);
-		lookAt(new FastVector3(0, 0, -1).mult(10), new FastVector3(0, 0, 0));
+		perspective(Math.PI * 0.5, 1);
+		lookAt(transform.position.fast(), new FastVector3(0, 0, 0));
     }
 
     public function lookAt(from:FastVector3, to:FastVector3) {
@@ -56,14 +54,14 @@ class Camera3D extends Basic {
 		orthogonalPerspective = true;
 		this.size = size;
 		this.aspectRatio = aspectRatio;
-		projectionMatrix = FastMatrix4.orthogonalProjection(-size * aspectRatio, size * aspectRatio, -size, size, farPlane, nearPlane);
+		projectionMatrix = FastMatrix4.orthogonalProjection(-size * aspectRatio, size * aspectRatio, -size, size, nearPlane, farPlane);
 	}
 
 	public function perspective(fovY:Float, aspectRatio:Float) {
 		orthogonalPerspective = false;
 		this.fovY = fovY;
 		this.aspectRatio = aspectRatio;
-		projectionMatrix = FastMatrix4.perspectiveProjection(fovY, aspectRatio, farPlane, nearPlane);
+		projectionMatrix = FastMatrix4.perspectiveProjection(fovY, aspectRatio, nearPlane, farPlane);
 	}
 
 	private inline function refreshCamera() {
