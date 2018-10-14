@@ -24,7 +24,7 @@ import kext.loaders.OBJMeshLoader.OBJMeshData;
 import kext.loaders.OGEXMeshLoader;
 import kext.loaders.OGEXMeshLoader.OGEXMeshData;
 
-class BasicMesh {
+class BasicMesh extends Basic {
 
 	public var vertexBuffer:VertexBuffer;
 	public var indexBuffer:IndexBuffer;
@@ -42,7 +42,11 @@ class BasicMesh {
 
 	public var texture:Image;
 
+	private var setPipeline:Bool = true;
+
 	public function new(vertexCount:Int, indexCount:Int, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		super();
+
 		if(vertexUsage == null) { vertexUsage = Usage.DynamicUsage; }
 		if(indexUsage == null) { indexUsage = Usage.DynamicUsage; }
 		
@@ -61,7 +65,7 @@ class BasicMesh {
 		backbuffer.g4.setIndexBuffer(indexBuffer);
 	}
 	
-	public inline function drawMesh(backbuffer:Image, setPipeline:Bool = true) {
+	override public inline function render(backbuffer:Image) {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }

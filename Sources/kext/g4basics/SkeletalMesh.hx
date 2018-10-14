@@ -27,7 +27,7 @@ typedef MeshSkeleton = {
 	rootJoint:MeshJoint
 }
 
-class SkeletalMesh {
+class SkeletalMesh extends Basic {
 
 	public var vertexBuffer:VertexBuffer;
 	public var indexBuffer:IndexBuffer;
@@ -51,9 +51,14 @@ class SkeletalMesh {
 	public var animationBuffer:Float32Array;
 	public var mainNode:Node;
 
-	public var fps:Float = 30;
+	public var animationTime:Float = 0;
+	public var animationSpeed:Float = 1;
+
+	private var setPipeline:Bool = true;
 
 	public function new(vertexCount:Int, indexCount:Int, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
+		super();
+
 		if(vertexUsage == null) { vertexUsage = Usage.StaticUsage; }
 		if(indexUsage == null) { indexUsage = Usage.StaticUsage; }
 
@@ -71,7 +76,11 @@ class SkeletalMesh {
 		transform = new Transform3D();
 	}
 
-	public function drawMesh(backbuffer:Image, setPipeline:Bool = true) {
+	override public function update(delta:Float) {
+		animationTime += delta * animationSpeed;
+	}
+
+	override public function render(backbuffer:Image) {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
@@ -184,8 +193,9 @@ class SkeletalMesh {
 		var bindTransform:FastMatrix4 = boneTransform.get(currentNode.key);
 		var animationIndex = boneIndex.get(currentNode.key);
 		if(currentNode.animation != null) {
-			var int:Int = Math.floor((kext.Application.time * fps) % currentNode.animation.track.values.length);
-			finalTransform = currentNode.animation.track.values[int];
+			var frames:Int = currentNode.animation.track.values.length;
+			var index:Int = Math.floor(animationTime * frames) % frames;
+			finalTransform = currentNode.animation.track.values[index];
 		} else {
 			finalTransform = bindTransform;
 		}

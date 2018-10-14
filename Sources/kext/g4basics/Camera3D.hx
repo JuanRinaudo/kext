@@ -42,8 +42,8 @@ class Camera3D extends Basic {
 		lookAt(transform.position.fast(), new FastVector3(0, 0, 0));
     }
 
-    public function lookAt(from:FastVector3, to:FastVector3) {
-		viewMatrix = FastMatrix4.lookAt(from, to, upVector);
+    public function lookAt(from:FastVector3, to:FastVector3, lookUpVector:FastVector3 = null) {
+		viewMatrix = FastMatrix4.lookAt(from, to, lookUpVector != null ? lookUpVector : upVector);
 	}
 
 	public function lookAtXYZ(fromX:Float, fromY:Float, fromZ:Float, toX:Float, toY:Float, toZ:Float) {

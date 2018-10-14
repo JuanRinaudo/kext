@@ -56,18 +56,18 @@ class Debug extends Basic {
 
 			cube.transform.setPosition(boundingCube.transform.position.add(boundingCube.v1));
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer);
+			cube.render(backbuffer);
 			cube.transform.setPosition(boundingCube.transform.position.add(boundingCube.v2));
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer);
+			cube.render(backbuffer);
 
 			cube.transform.setPosition(boundingCube.transform.position);
 			cube.transform.setScale(size.mult(0.1));
-			cube.drawMesh(backbuffer);
+			cube.render(backbuffer);
 			
 			cubeBound.transform.setPosition(boundingCube.getCubeCenter());
 			cubeBound.transform.setScale(size);
-			cubeBound.drawMesh(backbuffer);
+			cubeBound.render(backbuffer);
 
 			backbuffer.g4.setPipeline(fromPipeline);
 		}

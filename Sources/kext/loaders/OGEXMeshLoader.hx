@@ -373,7 +373,7 @@ class OGEXMeshLoader {
 		return transform;
 	}
 
-	private static function parseGeometry(key:String, input:StringInput):Geometry {
+	private static inline function parseGeometry(key:String, input:StringInput):Geometry {
 		var vertexes:Float32Array = null;
 		var normals:Float32Array = null;
 		var colors:Float32Array = null;
@@ -612,7 +612,7 @@ class OGEXMeshLoader {
 		array.set(index + 2, Std.parseFloat(split[2]));
 	}
 
-	private static function parseFloat2Array(input:StringInput):Float32Array {
+	private static inline function parseFloat2Array(input:StringInput):Float32Array {
 		input.readLine();
 		var line = input.readLine();
 		var count = Std.parseInt(line.substr(line.indexOf("//") + 2));
