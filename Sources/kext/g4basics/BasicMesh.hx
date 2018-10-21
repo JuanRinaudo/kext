@@ -56,7 +56,6 @@ class BasicMesh extends Basic {
 		vertexBuffer = new VertexBuffer(vertexCount, vertexStructure, vertexUsage);
 		indexBuffer = new IndexBuffer(indexCount, indexUsage);
 
-
 		transform = new Transform3D();
 	}
 
@@ -69,8 +68,7 @@ class BasicMesh extends Basic {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
-		backbuffer.g4.setVertexBuffer(vertexBuffer);
-		backbuffer.g4.setIndexBuffer(indexBuffer);
+		setBufferMesh(backbuffer);
 		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix));
 		backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix);
 		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
@@ -324,6 +322,7 @@ class BasicMesh extends Basic {
 		vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, uvy);
 	}
 
+	//TODO: Fix to it can make quads in any rotation
 	public static function createQuadMesh(vector1:Vector3, vector2:Vector3, pipeline:BasicPipeline, color:Color = Color.White):BasicMesh {
 		var mesh:BasicMesh = new BasicMesh(4, 6, pipeline);
 		var midZ:Float = (vector1.z + vector2.z) / 2;
