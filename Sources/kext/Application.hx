@@ -99,12 +99,10 @@ class Application {
 	private var loaderProgress:Float;
 	private var loaderUpdateID:Int;
 
-	private static var instance:Application;
+	public static var instance:Application;
 
 	public static var width:Float = 0;
 	public static var height:Float = 0;
-	public static var bufferScaleX:Float = 0;
-	public static var bufferScaleY:Float = 0;
 
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
@@ -150,8 +148,6 @@ class Application {
 		options = defaultApplicationOptions(applicationOptions);
 		width = options.bufferWidth;
 		height = options.bufferHeight;
-		bufferScaleX = systemOptions.width / width;
-		bufferScaleY = systemOptions.height / height;
 		
 		deltaTime = options.updatePeriod;
 
@@ -197,7 +193,7 @@ class Application {
 
 		audio = new AudioManager();
 
-		platform = new Platform(systemOptions);
+		platform = new Platform(systemOptions, options);
 		platform.addResizeHandler();
 		platform.addFullscreenHandler();
 		platform.setBlurFocusHandler(pause, resume);
@@ -218,6 +214,13 @@ class Application {
 		Assets.loadEverything(loadCompleteHandler);
 
 		onApplicationStart.dispatch();
+	}
+
+	public function resizeBuffers(width:Int, height:Int) {
+		options.bufferWidth = width;
+		options.bufferHeight = height;
+		platform.changeResolution(platform.screenWidth, platform.screenHeight);
+		createBuffers(width, height);
 	}
 
 	private function createBuffers(width:Int, height:Int) {
@@ -423,8 +426,8 @@ class Application {
 	}
 
 	public static function screenToGamePosition(vector:Vector2):Vector2 {
-		return new Vector2((vector.x - platform.targetRectangle.x) / (platform.targetRectangle.scaleFactor * bufferScaleX),
-			(vector.y - platform.targetRectangle.y) / (platform.targetRectangle.scaleFactor * bufferScaleY));
+		return new Vector2((vector.x - platform.targetRectangle.x) / (platform.targetRectangle.scaleFactor),
+			(vector.y - platform.targetRectangle.y) / (platform.targetRectangle.scaleFactor));
 	} 
 
 	public static function addCounterUpdate(counter:Counter) {

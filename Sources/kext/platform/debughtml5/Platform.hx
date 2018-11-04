@@ -1,5 +1,6 @@
 package kext.platform.debughtml5;
 
+import kext.Application.ApplicationOptions;
 import js.Browser;
 import js.html.Document;
 import js.html.Window;
@@ -16,20 +17,25 @@ class Platform implements IPlatform {
 
 	public var targetRectangle:TargetRectangle;
 
+	public var screenWidth(get, null):Int;
+	public var screenHeight(get, null):Int;
+
 	public var isMobile(default, null):Bool;
 	public var isDesktop(default, null):Bool;
 
 	private var sysOptions:SystemOptions;
+	private var options:ApplicationOptions;
 	
 	private var document:Document;
 	private var window:Window;
 	private var canvas:Element;
 
-	public function new(systemOptions:SystemOptions) {
+	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
 		isMobile = checkMobile();
 		isDesktop = !isMobile;
 
 		sysOptions = systemOptions;
+		options = applicationOptions;
 
 		document = Browser.document;
 		window = Browser.window;
@@ -51,8 +57,8 @@ class Platform implements IPlatform {
 		changeResolution(width, height);
 	}
 
-	private function changeResolution(width:Int, height:Int) {
-		targetRectangle = Scaler.targetRect(sysOptions.width, sysOptions.height, width, height, System.screenRotation);
+	public function changeResolution(width:Int, height:Int) {
+		targetRectangle = Scaler.targetRect(options.bufferWidth, options.bufferHeight, width, height, System.screenRotation);
 	}
 
 	public function addFullscreenHandler() {
@@ -60,8 +66,8 @@ class Platform implements IPlatform {
 	}
 
 	public function setBlurFocusHandler(pause:Void -> Void, resume:Void -> Void) {
-		Browser.window.onblur = pause;
-		Browser.window.onfocus = resume;
+		window.onblur = pause;
+		window.onfocus = resume;
 		canvas.onblur = pause;
 		canvas.onfocus = resume;
 	}
@@ -72,6 +78,14 @@ class Platform implements IPlatform {
 
 	private static inline function checkMobile():Bool {
 		return kha.SystemImpl.mobile;
+	}
+
+	public function get_screenWidth():Int {
+		return window.innerWidth;
+	}
+
+	public function get_screenHeight():Int {
+		return window.innerHeight;
 	}
 
 }

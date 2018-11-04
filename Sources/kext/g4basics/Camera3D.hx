@@ -20,7 +20,7 @@ class Camera3D extends Basic {
 
     public var transform:Transform3D;
     
-	public var upVector:FastVector3 = new FastVector3(0, -1, 0);
+	public var upVector:FastVector3 = new FastVector3(0, 1, 0);
 
     public function new() {
         super();

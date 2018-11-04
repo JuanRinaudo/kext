@@ -40,9 +40,9 @@ class BasicMesh extends Basic {
 
 	public var transform:Transform3D;
 
-	public var texture:Image;
+	public var textures:Array<Texture>;
 
-	private var setPipeline:Bool = true;
+	public var setPipeline:Bool = true;
 
 	public function new(vertexCount:Int, indexCount:Int, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null) {
 		super();
@@ -55,7 +55,6 @@ class BasicMesh extends Basic {
 
 		vertexBuffer = new VertexBuffer(vertexCount, vertexStructure, vertexUsage);
 		indexBuffer = new IndexBuffer(indexCount, indexUsage);
-
 
 		transform = new Transform3D();
 	}
@@ -76,8 +75,11 @@ class BasicMesh extends Basic {
 		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
 		backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix);
 		backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix));
-		if(texture != null) {
-			backbuffer.g4.setTexture(pipeline.textureUnit, texture);
+		for(texture in textures) {
+			texture.textureUnit = pipeline.getTextureUnit(texture.textureUnitName);
+			backbuffer.g4.setTexture(texture.textureUnit, texture.image);
+            backbuffer.g4.setTextureParameters(texture.textureUnit, texture.verticalAddresing, texture.horizontalAddresing,
+				texture.minificationFilter, texture.magnificationFilter, texture.mipMapFilter);
 		}
 		backbuffer.g4.drawIndexedVertices();
 	}
