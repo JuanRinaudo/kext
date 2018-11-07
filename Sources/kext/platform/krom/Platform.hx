@@ -1,5 +1,6 @@
 package kext.platform.krom;
 
+import kext.Application.ApplicationOptions;
 import kha.Scaler;
 import kha.Scaler.TargetRectangle;
 import kha.System;
@@ -11,16 +12,21 @@ class Platform implements IPlatform {
 
 	public var targetRectangle:TargetRectangle;
 
+	public var screenWidth(get, null):Int;
+	public var screenHeight(get, null):Int;
+
 	public var isMobile(default, null):Bool;
 	public var isDesktop(default, null):Bool;
 
 	private var sysOptions:SystemOptions;
+	private var options:ApplicationOptions;
 	
-	public function new(systemOptions:SystemOptions) {
+	public function new(systemOptions:SystemOptions, applicationOptions:ApplicationOptions) {
 		isMobile = checkMobile();
 		isDesktop = !isMobile;
 
 		sysOptions = systemOptions;
+		options = applicationOptions;
 
 		var width:Int = Math.floor(Application.width);
 		var height:Int = Math.floor(Application.height);
@@ -39,7 +45,7 @@ class Platform implements IPlatform {
 		
 	}
 
-	private function changeResolution(width:Int, height:Int) {
+	public function changeResolution(width:Int, height:Int) {
 		
 	}
 
@@ -57,6 +63,14 @@ class Platform implements IPlatform {
 
 	private static inline function checkMobile():Bool {
 		return false;
+	}
+
+	public function get_screenWidth():Int {
+		return System.windowWidth(0);
+	}
+
+	public function get_screenHeight():Int {
+		return System.windowHeight(0);
 	}
 
 }
