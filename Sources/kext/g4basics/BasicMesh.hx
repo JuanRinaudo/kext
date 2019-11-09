@@ -57,6 +57,8 @@ class BasicMesh extends Basic {
 		indexBuffer = new IndexBuffer(indexCount, indexUsage);
 
 		transform = new Transform3D();
+
+		textures = [];
 	}
 
 	public inline function setBufferMesh(backbuffer:Image) {

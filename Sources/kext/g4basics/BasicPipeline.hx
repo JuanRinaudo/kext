@@ -30,6 +30,7 @@ class BasicPipeline extends PipelineState {
 	public var locationProjectionViewMatrix:ConstantLocation;
 	public var locationNormalMatrix:ConstantLocation;
 
+	public var basicTexture:Bool = true;
 	public var textureUnit:TextureUnit;
 
 	public var camera:Camera3D;
@@ -82,7 +83,9 @@ class BasicPipeline extends PipelineState {
 		locationProjectionViewMatrix = getConstantLocation(G4Constants.PROJECTION_VIEW_MATRIX);
 		locationNormalMatrix = getConstantLocation(G4Constants.NORMAL_MATRIX);
 
-		textureUnit = getTextureUnit(G4Constants.TEXTURE);
+		if(basicTexture) {
+			textureUnit = getTextureUnit(G4Constants.TEXTURE);
+		}
 	}
 
 	public inline function setDefaultTextureUnitParameters(backbuffer:Image, unit:TextureUnit) {
