@@ -69,11 +69,11 @@ class BasicMesh extends Basic {
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
 		setBufferMesh(backbuffer);
-		backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix));
-		backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix);
-		backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix);
-		backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix);
-		backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix));
+		if(pipeline.locationMVPMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix)); }
+		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix); }
+		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix); }
+		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix); }
+		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix)); }
 		for(texture in textures) {
 			texture.textureUnit = pipeline.getTextureUnit(texture.textureUnitName);
 			backbuffer.g4.setTexture(texture.textureUnit, texture.image);
