@@ -39,10 +39,10 @@ class Camera3D extends Basic {
 		transform.setPosition(new Vector3(0, -10, -10));
 
 		perspective(Math.PI * 0.5, 1);
-		lookAt(transform.position.fast(), new FastVector3(0, 0, 0));
+		lookAt(new FastVector3(0, 0, 0), new FastVector3(0, 0, 0));
     }
 
-    public function lookAt(to:FastVector3, lookUpVector:FastVector3 = null) {
+    public function lookAt(to:FastVector3, ?lookUpVector:FastVector3) {
 		viewMatrix = FastMatrix4.lookAt(transform.position.fast(), to, lookUpVector != null ? lookUpVector : upVector);
 	}
 

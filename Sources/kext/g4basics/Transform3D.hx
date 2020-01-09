@@ -75,42 +75,63 @@ class Transform3D {
 		return transform;
 	}
 	
-	public function translate(delta:Vector3) {
+	public inline function translate(delta:Vector3) {
 		_position.x += delta.x;
 		_position.y += delta.y;
 		_position.z += delta.z;
 		dirty = true;
 	}
 
-	public function scaleTransform(delta:Vector3) {
+	public inline function scaleTransform(delta:Vector3) {
 		_scale.x *= delta.x;
 		_scale.y *= delta.y;
 		_scale.z *= delta.z;
 		dirty = true;
 	}
 
-	public function rotate(delta:Vector3) {
+	public inline function rotate(delta:Vector3) {
 		_rotation.x += delta.x;
 		_rotation.y += delta.y;
 		_rotation.z += delta.z;
 		dirty = true;
 	}
 
-	public function setPosition(value:Vector3) {
+	public inline function setPositionXYZ(x:Float, y:Float, z:Float) {
+		_position.x = x;
+		_position.y = y;
+		_position.z = z;
+		dirty = true;
+	}
+
+	public inline function setPosition(value:Vector3) {
 		_position.x = value.x;
 		_position.y = value.y;
 		_position.z = value.z;
 		dirty = true;
 	}
 
-	public function setScale(value:Vector3) {
+	public inline function setScaleXYZ(x:Float, y:Float, z:Float) {
+		_scale.x = x;
+		_scale.y = y;
+		_scale.z = z;
+		dirty = true;
+	}
+
+	public inline function setScale(value:Vector3) {
 		_scale.x = value.x;
 		_scale.y = value.y;
 		_scale.z = value.z;
 		dirty = true;
 	}
+	
+	public inline function setRotationXYZ(x:Float, y:Float, z:Float) {
+		_rotation.x = x;
+		_rotation.y = y;
+		_rotation.z = z;
+		dirty = true;
+	}
 
-	public function setRotation(value:Vector3) {
+	public inline function setRotation(value:Vector3) {
 		_rotation.x = value.x;
 		_rotation.y = value.y;
 		_rotation.z = value.z;

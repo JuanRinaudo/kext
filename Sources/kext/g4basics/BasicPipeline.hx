@@ -35,16 +35,21 @@ class BasicPipeline extends PipelineState {
 
 	public var camera:Camera3D;
 
-	public function new(vertexShader:VertexShader, fragmentShader:FragmentShader, camera:Camera3D = null) {
+	public function new(vertexShader:VertexShader, fragmentShader:FragmentShader, ?camera:Camera3D, ?vertexStructure:VertexStructure) {
 		super();
 		
 		this.camera = (camera == null ? Application.mainCamera : camera);
 
-		vertexStructure = new VertexStructure();
-		addVertexData(G4Constants.VERTEX_DATA_POSITION, VertexData.Float3);
-		addVertexData(G4Constants.VERTEX_DATA_NORMAL, VertexData.Float3);
-		addVertexData(G4Constants.VERTEX_DATA_TEXUV, VertexData.Float2);
-		addVertexData(G4Constants.VERTEX_DATA_COLOR, VertexData.Float3);
+		if(vertexStructure == null) {
+			this.vertexStructure = new VertexStructure();
+			addVertexData(G4Constants.VERTEX_DATA_POSITION, VertexData.Float3);
+			addVertexData(G4Constants.VERTEX_DATA_NORMAL, VertexData.Float3);
+			addVertexData(G4Constants.VERTEX_DATA_TEXUV, VertexData.Float2);
+			addVertexData(G4Constants.VERTEX_DATA_COLOR, VertexData.Float3);
+		}
+		else {
+			this.vertexStructure = vertexStructure;
+		}
 
 		this.vertexShader = vertexShader;
 		this.fragmentShader = fragmentShader;

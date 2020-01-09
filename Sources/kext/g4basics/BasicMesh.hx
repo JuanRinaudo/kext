@@ -66,16 +66,16 @@ class BasicMesh extends Basic {
 		backbuffer.g4.setIndexBuffer(indexBuffer);
 	}
 	
-	override public inline function render(backbuffer:Image) {
+	override public function render(backbuffer:Image) {
 		modelMatrix = transform.getMatrix();
 
 		if(setPipeline) { backbuffer.g4.setPipeline(pipeline); }
 		setBufferMesh(backbuffer);
 		if(pipeline.locationMVPMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationMVPMatrix, pipeline.getMVPMatrix(modelMatrix)); }
 		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationViewMatrix, pipeline.camera.viewMatrix); }
-		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix); }
-		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix); }
-		if(pipeline.locationViewMatrix != null) { backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix)); }
+		if(pipeline.locationModelMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationModelMatrix, modelMatrix); }
+		if(pipeline.locationProjectionMatrix != null) { backbuffer.g4.setMatrix(pipeline.locationProjectionMatrix, pipeline.camera.projectionMatrix); }
+		if(pipeline.locationNormalMatrix != null) { backbuffer.g4.setMatrix3(pipeline.locationNormalMatrix, pipeline.getNormalMatrix(modelMatrix)); }
 		for(texture in textures) {
 			texture.textureUnit = pipeline.getTextureUnit(texture.textureUnitName);
 			backbuffer.g4.setTexture(texture.textureUnit, texture.image);
@@ -161,6 +161,7 @@ class BasicMesh extends Basic {
 		return mesh;
 	}
 
+	// TODO(Juan): Change loading for with if to if with for inside
 	public static function fromSTLData(data:STLMeshData, pipeline:BasicPipeline, vertexUsage:Usage = null, indexUsage:Usage = null):BasicMesh {
 		var mesh:BasicMesh = new BasicMesh(data.vertexCount, data.triangleCount * 3, pipeline, vertexUsage, indexUsage);
 		
@@ -171,14 +172,18 @@ class BasicMesh extends Basic {
 		for(i in 0...data.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
+			if(vertexStep >= 3) {
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
+			}
 			
-			normalIndex = Math.floor(i / 3);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[normalIndex * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[normalIndex * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[normalIndex * 3 + 2]);
+			if(vertexStep >= 6) {
+				normalIndex = Math.floor(i / 3);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[normalIndex * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[normalIndex * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[normalIndex * 3 + 2]);
+			}
 		}
 		mesh.vertexBuffer.unlock();
 		
@@ -214,16 +219,22 @@ class BasicMesh extends Basic {
 		for(i in 0...data.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
+			if(vertexStep >= 3) {
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, data.vertexes[i * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, data.vertexes[i * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, data.vertexes[i * 3 + 2]);
+			}
 			
-			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, data.uvs[i * 2 + 0]);
-			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, data.uvs[i * 2 + 1]);
-			
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[i * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[i * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[i * 3 + 2]);
+			if(vertexStep >= 5) {
+				vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, data.uvs[i * 2 + 0]);
+				vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, data.uvs[i * 2 + 1]);
+			}
+
+			if(vertexStep >= 8) {
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, data.normals[i * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, data.normals[i * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, data.normals[i * 3 + 2]);
+			}
 		}
 		mesh.vertexBuffer.unlock();
 		
@@ -251,20 +262,28 @@ class BasicMesh extends Basic {
 		for(i in 0...geometry.vertexCount) {
 			baseIndex = i * vertexStep;
 			
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, geometry.vertexes[i * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, geometry.vertexes[i * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, geometry.vertexes[i * 3 + 2]);
-			
-			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, geometry.uvs != null ? geometry.uvs[i * 2 + 0] : 0);
-			vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, geometry.uvs != null ? 1 - geometry.uvs[i * 2 + 1] : 0);
-			
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, geometry.colors != null ? geometry.colors[i * 3 + 0] : 0);
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, geometry.colors != null ? geometry.colors[i * 3 + 1] : 0);
-			vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, geometry.colors != null ? geometry.colors[i * 3 + 2] : 0);
-			
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, geometry.normals[i * 3 + 0]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, geometry.normals[i * 3 + 1]);
-			vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, geometry.normals[i * 3 + 2]);
+			if(vertexStep >= 3) {
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 0, geometry.vertexes[i * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 1, geometry.vertexes[i * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.VERTEX_OFFSET + 2, geometry.vertexes[i * 3 + 2]);
+			}
+
+			if(vertexStep >= 5) {
+				vertexes.set(baseIndex + G4Constants.UV_OFFSET + 0, geometry.uvs != null ? geometry.uvs[i * 2 + 0] : 0);
+				vertexes.set(baseIndex + G4Constants.UV_OFFSET + 1, geometry.uvs != null ? 1 - geometry.uvs[i * 2 + 1] : 0);
+			}
+
+			if(vertexStep >= 8) {
+				vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 0, geometry.colors != null ? geometry.colors[i * 3 + 0] : 0);
+				vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 1, geometry.colors != null ? geometry.colors[i * 3 + 1] : 0);
+				vertexes.set(baseIndex + G4Constants.COLOR_OFFSET + 2, geometry.colors != null ? geometry.colors[i * 3 + 2] : 0);
+			}
+
+			if(vertexStep >= 11) {
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 0, geometry.normals[i * 3 + 0]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 1, geometry.normals[i * 3 + 1]);
+				vertexes.set(baseIndex + G4Constants.NORMAL_OFFSET + 2, geometry.normals[i * 3 + 2]);
+			}
 		}
 		mesh.vertexBuffer.unlock();
 		
