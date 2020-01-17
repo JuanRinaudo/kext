@@ -104,6 +104,8 @@ class Application {
 	public static var width:Float = 0;
 	public static var height:Float = 0;
 
+	public static var ratio(get, null):Float;
+
 	public static var gamepad:GamepadInput;
 	public static var keyboard:KeyboardInput;
 	public static var mouse:MouseInput;
@@ -477,6 +479,10 @@ class Application {
 		}
 		
 		paused = false;
+	}
+
+	private static function get_ratio():Float {
+		return width / height;
 	}
 
 }
