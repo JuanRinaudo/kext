@@ -5,6 +5,10 @@ import kha.math.Vector4;
 
 class MathExt {
 
+	public static inline var PI:Float = 3.14159265359;
+	public static inline var Deg2Rad:Float = (PI * 2) / 360;
+	public static inline var Rad2Deg:Float = 360 / (PI * 2);
+
 	public static inline function clamp(value:Float, min:Float, max:Float):Float {
 		return Math.max(Math.min(value, max), min);
 	}

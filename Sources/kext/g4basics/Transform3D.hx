@@ -14,6 +14,11 @@ class Transform3D {
 	public var origin(get, null):Vector3;
 	public var rotationEuler(get, null):Vector3;
 	public var rotationQuaternion(get, null):Vector4;
+
+	public var forward(get, null):Vector3;
+	public var left(get, null):Vector3;
+	public var right(get, null):Vector3;
+
 	private var _position(default, null):Vector3;
 	private var _scale(default, null):Vector3;
 	private var _origin(default, null):Vector3;
@@ -81,6 +86,13 @@ class Transform3D {
 		_position.z += delta.z;
 		dirty = true;
 	}
+	
+	public inline function translateXYZ(x:Float, y:Float, z:Float) {
+		_position.x += x;
+		_position.y += y;
+		_position.z += z;
+		dirty = true;
+	}
 
 	public inline function scaleTransform(delta:Vector3) {
 		_scale.x *= delta.x;
@@ -93,6 +105,13 @@ class Transform3D {
 		_rotation.x += delta.x;
 		_rotation.y += delta.y;
 		_rotation.z += delta.z;
+		dirty = true;
+	}
+
+	public inline function rotateXYZ(x:Float, y:Float, z:Float) {
+		_rotation.x += x;
+		_rotation.y += y;
+		_rotation.z += z;
 		dirty = true;
 	}
 
@@ -227,7 +246,7 @@ class Transform3D {
 		dirty = true;
 		return _rotation.z;
 	}
-	
+
 	public inline function get_originX():Float {
 		return _rotation.x;
 	}
@@ -271,11 +290,35 @@ class Transform3D {
 	}
 
 	public inline function get_rotationEuler():Vector3 {
-		return new Vector3(_rotation.x, _rotation.y, _rotation.z);
+		return new Vector3(_rotation.x * MathExt.Rad2Deg, _rotation.y * MathExt.Rad2Deg, _rotation.z * MathExt.Rad2Deg);
 	}
 
 	public inline function get_rotationQuaternion():Vector4 {
 		return MathExt.eulerToQuaternion(_rotation);
+	}
+	
+	public function get_forward():Vector3 {
+		var forward:Vector3 = new Vector3();
+		forward.x = Math.sin(_rotation.y * MathExt.Deg2Rad) * Math.cos(_rotation.x * MathExt.Deg2Rad);
+		forward.y = Math.sin(-_rotation.x * MathExt.Deg2Rad);
+		forward.z = Math.cos(_rotation.x * MathExt.Deg2Rad) * Math.cos(_rotation.y * MathExt.Deg2Rad);
+		return forward;
+	}
+	
+	public function get_left():Vector3 {
+		var forward:Vector3 = new Vector3();
+		forward.x = Math.sin((_rotation.y - 90) * MathExt.Deg2Rad) * Math.cos(_rotation.x * MathExt.Deg2Rad);
+		forward.y = Math.sin(-_rotation.x * MathExt.Deg2Rad);
+		forward.z = Math.cos(_rotation.x * MathExt.Deg2Rad) * Math.cos((_rotation.y - 90) * MathExt.Deg2Rad);
+		return forward;
+	}
+	
+	public function get_right():Vector3 {
+		var forward:Vector3 = new Vector3();
+		forward.x = Math.sin((_rotation.y + 90) * MathExt.Deg2Rad) * Math.cos(_rotation.x * MathExt.Deg2Rad);
+		forward.y = Math.sin(-_rotation.x * MathExt.Deg2Rad);
+		forward.z = Math.cos(_rotation.x * MathExt.Deg2Rad) * Math.cos((_rotation.y + 90) * MathExt.Deg2Rad);
+		return forward;
 	}
 
 	public static function fromFloats(x:Float = 0, y:Float = 0, z:Float = 0,

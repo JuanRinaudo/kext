@@ -18,6 +18,7 @@ import kha.math.Vector2;
 import kha.math.FastMatrix3;
 
 import kext.ExtAssets;
+import kext.math.Rectangle;
 
 import kext.g4basics.Camera3D;
 import kext.g4basics.BasicPipeline;
@@ -101,8 +102,9 @@ class Application {
 
 	public static var instance:Application;
 
-	public static var width:Float = 0;
-	public static var height:Float = 0;
+	public static var width(get, null):Float;
+	public static var height(get, null):Float;
+	public static var screenRect:Rectangle = new Rectangle();
 
 	public static var ratio(get, null):Float;
 
@@ -148,8 +150,8 @@ class Application {
 		this.systemOptions = defaultSystemOptions(systemOptions);
 		windowOptions = defaultWindowOptions(systemOptions.window);
 		options = defaultApplicationOptions(applicationOptions);
-		width = options.bufferWidth;
-		height = options.bufferHeight;
+		screenRect.width = options.bufferWidth;
+		screenRect.height = options.bufferHeight;
 		
 		deltaTime = options.updatePeriod;
 
@@ -479,6 +481,14 @@ class Application {
 		}
 		
 		paused = false;
+	}
+
+	private static function get_width():Float {
+		return screenRect.width;
+	}
+
+	private static function get_height():Float {
+		return screenRect.height;
 	}
 
 	private static function get_ratio():Float {
